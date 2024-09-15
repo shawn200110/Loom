@@ -9,10 +9,14 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include <stdio.h>
+
+#include "DSP/ProcessorClasses.h"
 
 //==============================================================================
 /**
 */
+
 class LoomAudioProcessor  : public juce::AudioProcessor
 {
 public:
@@ -88,12 +92,17 @@ private:
         return freqDomainSignal;  // Implement formant shifting here
     }
 
-   /* using Filter = juce::dsp::IIR::Filter<float>;
-    using Filter = juce::dsp::IIR::Filter<float>;
+    using FirstStage = juce::dsp::ProcessorChain<STFTProcessor>;
 
-    using CutFilter = juce::dsp::ProcessorChain<Filter, Filter, Filter, Filter>;
+    using SecondStage = juce::dsp::ProcessorChain<MorphProcessor,        // Step 2: Morph hR and vR in the frequency domain
+        FormantShiftProcessor,    // Step 3: Formant shift on the morphed signal
+        InverseSTFTProcessor>;
 
-    using MonoChain = juce::dsp::ProcessorChain<CutFilterMorphe, Filter, CutFilter>;
+    FirstStage leftChainV, rightChainV, leftChainH, rightChainH;
 
-    MonoChain leftChain, rightChain;*/
+    SecondStage leftChain, rightChain;
+
+        
+
+
 };

@@ -9,7 +9,69 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+
 //==============================================================================
+STFTProcessor::STFTProcessor()
+{
+
+}
+
+void STFTProcessor::process(juce::dsp::ProcessContextReplacing<float> cntxt)
+{
+
+}
+
+void STFTProcessor::prepare(juce::dsp::ProcessSpec spec)
+{
+
+}
+
+MorphProcessor::MorphProcessor()
+{
+
+}
+
+void MorphProcessor::process(juce::dsp::ProcessContextReplacing<float> cntxt)
+{
+
+}
+
+void MorphProcessor::prepare(juce::dsp::ProcessSpec spec)
+{
+
+}
+
+FormantShiftProcessor::FormantShiftProcessor()
+{
+
+}
+
+void FormantShiftProcessor::process(juce::dsp::ProcessContextReplacing<float> cntxt)
+{
+
+}
+
+void FormantShiftProcessor::prepare(juce::dsp::ProcessSpec spec)
+{
+
+}
+
+InverseSTFTProcessor::InverseSTFTProcessor()
+{
+
+}
+
+void InverseSTFTProcessor::process(juce::dsp::ProcessContextReplacing<float> cntxt)
+{
+
+}
+
+void InverseSTFTProcessor::prepare(juce::dsp::ProcessSpec spec)
+{
+
+}
+
+
 LoomAudioProcessor::LoomAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
      : AudioProcessor (BusesProperties()
@@ -95,6 +157,18 @@ void LoomAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
+    // Use this method as the place to do any pre-playback
+    // initialisation that you need..
+
+    juce::dsp::ProcessSpec spec{};
+    spec.maximumBlockSize = samplesPerBlock;
+    spec.numChannels = 1;
+    spec.sampleRate = sampleRate;
+
+    leftChain.prepare(spec);
+    rightChain.prepare(spec);
+
+ 
 }
 
 void LoomAudioProcessor::releaseResources()
@@ -132,7 +206,7 @@ bool LoomAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) con
 void LoomAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
-    auto totalNumInputChannels  = getTotalNumInputChannels();
+    auto totalNumInputChannels = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
     // In case we have more outputs than inputs, this code clears any output
@@ -142,20 +216,28 @@ void LoomAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
     // when they first compile a plugin, but obviously you don't need to keep
     // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
+        buffer.clear(i, 0, buffer.getNumSamples());
 
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        auto* channelData = buffer.getWritePointer (channel);
+    juce::dsp::AudioBlock<float> block(buffer);
 
-        // ..do something to the data...
-    }
+    auto leftBlock = block.getSingleChannelBlock(0);
+    auto rightBlock = block.getSingleChannelBlock(1);
+
+    juce::dsp::ProcessContextReplacing<float> leftContext(leftBlock);
+    juce::dsp::ProcessContextReplacing<float> rightContext(rightBlock);
+    // Code for passing the buffer through all the different blocks
+
+
+    
+
+    /*buffer.clear();
+
+    juce::dsp::ProcessContextReplacing<float> stereoContext(block);
+    osc.process(stereoContext);*/
+    
+    leftChain.process(leftContext);
+    rightChain.process(rightContext);
+    
 }
 
 //==============================================================================
@@ -188,13 +270,13 @@ LoomAudioProcessor::createParameterLayout()
 {
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
 
-    layout.add(std::make_unique<juce::AudioParameterFloat>("numFBs", "# Freq Bands", juce::NormalisableRange <float>(8.f,64.f,4.f, 1.f)));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("numFBs", "# Freq Bands", juce::NormalisableRange <float>(8.f,64.f,4.f, 1.f), 1.f));
 
-    layout.add(std::make_unique<juce::AudioParameterFloat>("fmt", "Formant Shift", juce::NormalisableRange <float>(-12.f, 12.f, 0.1f, 1.f)));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("fmt", "Formant Shift", juce::NormalisableRange <float>(-12.f, 12.f, 0.1f, 1.f),1.f));
 
-    layout.add(std::make_unique<juce::AudioParameterFloat>("atk", "Attack", juce::NormalisableRange <float>(0.f, 0.1f, 0.01f, 1.f)));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("atk", "Attack", juce::NormalisableRange <float>(0.f, 0.1f, 0.01f, 1.f), 1.f));
 
-    layout.add(std::make_unique<juce::AudioParameterFloat>("rls", "Release", juce::NormalisableRange <float>(0.01f, 0.5f, 0.01f, 1.f)));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("rls", "Release", juce::NormalisableRange <float>(0.01f, 0.5f, 0.01f, 1.f), 1.f));
 
 
     return layout;

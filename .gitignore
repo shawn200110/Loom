@@ -66,3 +66,126 @@ Builds/VisualStudio2022/.vs/Loom/v17/.suo
 Builds/VisualStudio2022/.vs/Loom/FileContentIndex/e52d7014-9df0-4d5d-8f68-ffd61507e2d4.vsidx
 Builds/VisualStudio2022/.vs/Loom/FileContentIndex/82cf6a5c-3af7-4b31-bf56-bc913a237003.vsidx
 Builds/VisualStudio2022/.vs/Loom/FileContentIndex/29f12885-2ea6-467e-b50d-8986889c105f.vsidx
+Source/DSP/.vs/VSWorkspaceState.json
+Source/DSP/.vs/slnx.sqlite
+Source/DSP/.vs/ProjectSettings.json
+Source/DSP/.vs/DSP/v17/DocumentLayout.json
+Source/DSP/.vs/DSP/v17/Browse.VC.db
+Source/DSP/.vs/DSP/v17/.wsuo
+Source/DSP/.vs/DSP/FileContentIndex/83eb1b6f-a020-4f08-9522-c34bc78ea522.vsidx
+Source/DSP/.vs/DSP/FileContentIndex/6a505eb2-efd3-4830-a0ee-b94d9d393fb0.vsidx
+Source/DSP/.vs/DSP/FileContentIndex/04f5de84-7d18-4bff-b314-accc57bed6ef.vsidx
+JuceLibraryCode/include_juce_dsp.mm
+JuceLibraryCode/include_juce_dsp.cpp
+Builds/VisualStudio2022/.vs/Loom/v17/Solution.VC.db-wal
+Builds/VisualStudio2022/.vs/Loom/v17/Solution.VC.db-shm
+Builds/VisualStudio2022/.vs/Loom/v17/ipch/AutoPCH/a5b8d77f0acd7b1e/PLUGINPROCESSOR.ipch
+Builds/VisualStudio2022/.vs/Loom/v17/ipch/AutoPCH/99c918329d92360c/PLUGINPROCESSOR.ipch
+Builds/VisualStudio2022/.vs/Loom/v17/ipch/AutoPCH/78e395f7a6f20260/INCLUDE_JUCE_AUDIO_UTILS.ipch
+Builds/VisualStudio2022/.vs/Loom/v17/ipch/AutoPCH/2e4ba86e92c820d5/PLUGINPROCESSOR.ipch
+Builds/VisualStudio2022/.vs/Loom/v17/Browse.VC.opendb
+Builds/VisualStudio2022/.vs/Loom/v17/Browse.VC.db-wal
+Builds/VisualStudio2022/.vs/Loom/v17/Browse.VC.db-shm
+Builds/VisualStudio2022/.vs/Loom/FileContentIndex/c883d377-17e9-4533-93e7-e348d8c781ff.vsidx
+Builds/VisualStudio2022/.vs/Loom/FileContentIndex/642e92e1-9005-42d9-b571-7932bb7b8d61.vsidx
+Builds/VisualStudio2022/.vs/Loom/FileContentIndex/5d3d99ff-7326-4b87-99b0-910174e62554.vsidx
+Builds/VisualStudio2022/x64/Debug/VST3/resources.res
+Builds/VisualStudio2022/x64/Debug/VST3/Loom_VST3.vcxproj.FileListAbsolute.txt
+Builds/VisualStudio2022/x64/Debug/VST3/Loom_VST3.tlog/unsuccessfulbuild
+Builds/VisualStudio2022/x64/Debug/VST3/Loom_VST3.tlog/rc.write.1.tlog
+Builds/VisualStudio2022/x64/Debug/VST3/Loom_VST3.tlog/rc.read.1.tlog
+Builds/VisualStudio2022/x64/Debug/VST3/Loom_VST3.tlog/rc.command.1.tlog
+Builds/VisualStudio2022/x64/Debug/VST3/Loom_VST3.tlog/Loom_VST3.lastbuildstate
+Builds/VisualStudio2022/x64/Debug/VST3/Loom_VST3.tlog/link.write.1.tlog
+Builds/VisualStudio2022/x64/Debug/VST3/Loom_VST3.tlog/link.secondary.1.tlog
+Builds/VisualStudio2022/x64/Debug/VST3/Loom_VST3.tlog/link.read.1.tlog
+Builds/VisualStudio2022/x64/Debug/VST3/Loom_VST3.tlog/link.command.1.tlog
+Builds/VisualStudio2022/x64/Debug/VST3/Loom_VST3.tlog/CL.write.1.tlog
+Builds/VisualStudio2022/x64/Debug/VST3/Loom_VST3.tlog/CL.read.1.tlog
+Builds/VisualStudio2022/x64/Debug/VST3/Loom_VST3.tlog/Cl.items.tlog
+Builds/VisualStudio2022/x64/Debug/VST3/Loom_VST3.tlog/CL.command.1.tlog
+Builds/VisualStudio2022/x64/Debug/VST3/Loom_VST3.log
+Builds/VisualStudio2022/x64/Debug/VST3/Loom.vst3/Contents/x86_64-win/Loom.vst3
+Builds/VisualStudio2022/x64/Debug/VST3/Loom.vst3/Contents/Resources/moduleinfo.json
+Builds/VisualStudio2022/x64/Debug/VST3/Loom.pdb
+Builds/VisualStudio2022/x64/Debug/VST3/Loom.lib
+Builds/VisualStudio2022/x64/Debug/VST3/Loom.ilk
+Builds/VisualStudio2022/x64/Debug/VST3/Loom.exp
+Builds/VisualStudio2022/x64/Debug/VST3/Loom.dll.recipe
+Builds/VisualStudio2022/x64/Debug/VST3/Loom.dll
+Builds/VisualStudio2022/x64/Debug/VST3/Loom.Build.CppClean.log
+Builds/VisualStudio2022/x64/Debug/VST3/include_juce_audio_plugin_client_VST3.obj
+Builds/VisualStudio2022/x64/Debug/VST3 Manifest Helper/resources.res
+Builds/VisualStudio2022/x64/Debug/VST3 Manifest Helper/Loom_VST3ManifestHelper.vcxproj.FileListAbsolute.txt
+Builds/VisualStudio2022/x64/Debug/VST3 Manifest Helper/Loom_VST3ManifestHelper.log
+Builds/VisualStudio2022/x64/Debug/VST3 Manifest Helper/Loom_VST.65782880.tlog/rc.write.1.tlog
+Builds/VisualStudio2022/x64/Debug/VST3 Manifest Helper/Loom_VST.65782880.tlog/rc.read.1.tlog
+Builds/VisualStudio2022/x64/Debug/VST3 Manifest Helper/Loom_VST.65782880.tlog/rc.command.1.tlog
+Builds/VisualStudio2022/x64/Debug/VST3 Manifest Helper/Loom_VST.65782880.tlog/Loom_VST3ManifestHelper.lastbuildstate
+Builds/VisualStudio2022/x64/Debug/VST3 Manifest Helper/Loom_VST.65782880.tlog/link.write.1.tlog
+Builds/VisualStudio2022/x64/Debug/VST3 Manifest Helper/Loom_VST.65782880.tlog/link.secondary.1.tlog
+Builds/VisualStudio2022/x64/Debug/VST3 Manifest Helper/Loom_VST.65782880.tlog/link.read.1.tlog
+Builds/VisualStudio2022/x64/Debug/VST3 Manifest Helper/Loom_VST.65782880.tlog/link.command.1.tlog
+Builds/VisualStudio2022/x64/Debug/VST3 Manifest Helper/Loom_VST.65782880.tlog/CL.write.1.tlog
+Builds/VisualStudio2022/x64/Debug/VST3 Manifest Helper/Loom_VST.65782880.tlog/CL.read.1.tlog
+Builds/VisualStudio2022/x64/Debug/VST3 Manifest Helper/Loom_VST.65782880.tlog/Cl.items.tlog
+Builds/VisualStudio2022/x64/Debug/VST3 Manifest Helper/Loom_VST.65782880.tlog/CL.command.1.tlog
+Builds/VisualStudio2022/x64/Debug/VST3 Manifest Helper/juce_VST3ManifestHelper.obj
+Builds/VisualStudio2022/x64/Debug/VST3 Manifest Helper/juce_vst3_helper.pdb
+Builds/VisualStudio2022/x64/Debug/VST3 Manifest Helper/juce_vst3_helper.ilk
+Builds/VisualStudio2022/x64/Debug/VST3 Manifest Helper/juce_vst3_helper.exe.recipe
+Builds/VisualStudio2022/x64/Debug/VST3 Manifest Helper/juce_vst3_helper.exe
+Builds/VisualStudio2022/x64/Debug/VST3 Manifest Helper/juce_vst3_helper.Build.CppClean.log
+Builds/VisualStudio2022/x64/Debug/Standalone Plugin/resources.res
+Builds/VisualStudio2022/x64/Debug/Standalone Plugin/Loom_StandalonePlugin.log
+Builds/VisualStudio2022/x64/Debug/Standalone Plugin/Loom_Sta.668A32BD.tlog/unsuccessfulbuild
+Builds/VisualStudio2022/x64/Debug/Standalone Plugin/Loom_Sta.668A32BD.tlog/rc.write.1.tlog
+Builds/VisualStudio2022/x64/Debug/Standalone Plugin/Loom_Sta.668A32BD.tlog/rc.read.1.tlog
+Builds/VisualStudio2022/x64/Debug/Standalone Plugin/Loom_Sta.668A32BD.tlog/rc.command.1.tlog
+Builds/VisualStudio2022/x64/Debug/Standalone Plugin/Loom_Sta.668A32BD.tlog/Loom_StandalonePlugin.lastbuildstate
+Builds/VisualStudio2022/x64/Debug/Standalone Plugin/Loom_Sta.668A32BD.tlog/link.write.1.tlog
+Builds/VisualStudio2022/x64/Debug/Standalone Plugin/Loom_Sta.668A32BD.tlog/link.read.1.tlog
+Builds/VisualStudio2022/x64/Debug/Standalone Plugin/Loom_Sta.668A32BD.tlog/link.command.1.tlog
+Builds/VisualStudio2022/x64/Debug/Standalone Plugin/Loom_Sta.668A32BD.tlog/CL.write.1.tlog
+Builds/VisualStudio2022/x64/Debug/Standalone Plugin/Loom_Sta.668A32BD.tlog/CL.read.1.tlog
+Builds/VisualStudio2022/x64/Debug/Standalone Plugin/Loom_Sta.668A32BD.tlog/CL.command.1.tlog
+Builds/VisualStudio2022/x64/Debug/Standalone Plugin/Loom.pdb
+Builds/VisualStudio2022/x64/Debug/Standalone Plugin/include_juce_audio_plugin_client_Standalone.obj
+Builds/VisualStudio2022/x64/Debug/Shared Code/PluginProcessor.obj
+Builds/VisualStudio2022/x64/Debug/Shared Code/PluginEditor.obj
+Builds/VisualStudio2022/x64/Debug/Shared Code/Loom_SharedCode.vcxproj.FileListAbsolute.txt
+Builds/VisualStudio2022/x64/Debug/Shared Code/Loom_SharedCode.tlog/Loom_SharedCode.lastbuildstate
+Builds/VisualStudio2022/x64/Debug/Shared Code/Loom_SharedCode.tlog/Lib.command.1.tlog
+Builds/VisualStudio2022/x64/Debug/Shared Code/Loom_SharedCode.tlog/Lib-link.write.1.tlog
+Builds/VisualStudio2022/x64/Debug/Shared Code/Loom_SharedCode.tlog/Lib-link.read.1.tlog
+Builds/VisualStudio2022/x64/Debug/Shared Code/Loom_SharedCode.tlog/CL.read.1.tlog
+Builds/VisualStudio2022/x64/Debug/Shared Code/Loom_SharedCode.tlog/Cl.items.tlog
+Builds/VisualStudio2022/x64/Debug/Shared Code/Loom_SharedCode.tlog/CL.command.1.tlog
+Builds/VisualStudio2022/x64/Debug/Shared Code/Loom_SharedCode.tlog/CL.11720.write.1.tlog
+Builds/VisualStudio2022/x64/Debug/Shared Code/Loom_SharedCode.log
+Builds/VisualStudio2022/x64/Debug/Shared Code/Loom.pdb
+Builds/VisualStudio2022/x64/Debug/Shared Code/Loom.lib.recipe
+Builds/VisualStudio2022/x64/Debug/Shared Code/Loom.lib
+Builds/VisualStudio2022/x64/Debug/Shared Code/Loom.Build.CppClean.log
+Builds/VisualStudio2022/x64/Debug/Shared Code/include_juce_gui_extra.obj
+Builds/VisualStudio2022/x64/Debug/Shared Code/include_juce_gui_basics.obj
+Builds/VisualStudio2022/x64/Debug/Shared Code/include_juce_graphics_Harfbuzz.obj
+Builds/VisualStudio2022/x64/Debug/Shared Code/include_juce_graphics.obj
+Builds/VisualStudio2022/x64/Debug/Shared Code/include_juce_events.obj
+Builds/VisualStudio2022/x64/Debug/Shared Code/include_juce_dsp.obj
+Builds/VisualStudio2022/x64/Debug/Shared Code/include_juce_data_structures.obj
+Builds/VisualStudio2022/x64/Debug/Shared Code/include_juce_core_CompilationTime.obj
+Builds/VisualStudio2022/x64/Debug/Shared Code/include_juce_core.obj
+Builds/VisualStudio2022/x64/Debug/Shared Code/include_juce_audio_utils.obj
+Builds/VisualStudio2022/x64/Debug/Shared Code/include_juce_audio_processors_lv2_libs.obj
+Builds/VisualStudio2022/x64/Debug/Shared Code/include_juce_audio_processors_ara.obj
+Builds/VisualStudio2022/x64/Debug/Shared Code/include_juce_audio_processors.obj
+Builds/VisualStudio2022/x64/Debug/Shared Code/include_juce_audio_plugin_client_ARA.obj
+Builds/VisualStudio2022/x64/Debug/Shared Code/include_juce_audio_formats.obj
+Builds/VisualStudio2022/x64/Debug/Shared Code/include_juce_audio_devices.obj
+Builds/VisualStudio2022/x64/Debug/Shared Code/include_juce_audio_basics.obj
+Builds/VisualStudio2022/Loom_VST3.vcxproj.user
+Builds/VisualStudio2022/Loom_StandalonePlugin.vcxproj.user
+Builds/VisualStudio2022/.vs/Loom/FileContentIndex/aaee49c2-63f9-42e9-ace9-557363ccb4fc.vsidx
+Builds/VisualStudio2022/.vs/Loom/FileContentIndex/33398bc3-8ee4-4b4b-b320-2ac8ce096b75.vsidx
+Builds/VisualStudio2022/.vs/Loom/FileContentIndex/1d284b16-7db5-47a3-8f97-396d1ec70ccf.vsidx
