@@ -11,11 +11,15 @@
 #include <JuceHeader.h>
 #include <stdio.h>
 
-#include "DSP/ProcessorClasses.h"
+#include "DSP/FFTProcessor.h"
+#include "DSP/MorphProcessor.h"
+#include "DSP/FormantShiftProcessor.h"
 
 //==============================================================================
 /**
 */
+
+
 
 class LoomAudioProcessor  : public juce::AudioProcessor
 {
@@ -64,13 +68,10 @@ public:
         "Parameters",createParameterLayout() };
 
 
-
 private:
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (LoomAudioProcessor)
 
-
-    STFTProcessor vocalSTFT, harmonicaSTFT;  // STFT objects for vocal and harmonica signals
 
     // Morphing function: define how the signals should be morphed in the frequency domain
     juce::AudioBuffer<float> morph(const juce::AudioBuffer<float>& vocalFreqs,
@@ -92,15 +93,23 @@ private:
         return freqDomainSignal;  // Implement formant shifting here
     }
 
-    using FirstStage = juce::dsp::ProcessorChain<STFTProcessor>;
+    //using FirstStage = juce::dsp::ProcessorChain<STFTProcessor>;
+
+    //using FirstStage = juce::dsp::ProcessorChain<FFTProcessor>;
+    
+    
+
+    //using FirstStage = juce::dsp::ProcessorChain<FFT>;
 
     using SecondStage = juce::dsp::ProcessorChain<MorphProcessor,        // Step 2: Morph hR and vR in the frequency domain
-        FormantShiftProcessor,    // Step 3: Formant shift on the morphed signal
-        InverseSTFTProcessor>;
+        FormantShiftProcessor>;    // Step 3: Formant shift on the morphed signal
 
-    FirstStage leftChainV, rightChainV, leftChainH, rightChainH;
+
+    //FirstStage leftChainV, rightChainV, leftChainH, rightChainH;
 
     SecondStage leftChain, rightChain;
+    FFTProcessor fftProcessor;
+
 
         
 

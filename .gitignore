@@ -189,3 +189,22 @@ Builds/VisualStudio2022/Loom_StandalonePlugin.vcxproj.user
 Builds/VisualStudio2022/.vs/Loom/FileContentIndex/aaee49c2-63f9-42e9-ace9-557363ccb4fc.vsidx
 Builds/VisualStudio2022/.vs/Loom/FileContentIndex/33398bc3-8ee4-4b4b-b320-2ac8ce096b75.vsidx
 Builds/VisualStudio2022/.vs/Loom/FileContentIndex/1d284b16-7db5-47a3-8f97-396d1ec70ccf.vsidx
+Builds/VisualStudio2022/x64/Debug/Standalone Plugin/Loom_StandalonePlugin.vcxproj.FileListAbsolute.txt
+Builds/VisualStudio2022/x64/Debug/Standalone Plugin/Loom_Sta.668A32BD.tlog/link.secondary.1.tlog
+Builds/VisualStudio2022/x64/Debug/Standalone Plugin/Loom_Sta.668A32BD.tlog/Cl.items.tlog
+Builds/VisualStudio2022/x64/Debug/Standalone Plugin/Loom.ilk
+Builds/VisualStudio2022/x64/Debug/Standalone Plugin/Loom.exe.recipe
+Builds/VisualStudio2022/x64/Debug/Standalone Plugin/Loom.exe
+Builds/VisualStudio2022/x64/Debug/Shared Code/MorphProcessor.obj
+Builds/VisualStudio2022/x64/Debug/Shared Code/Loom_SharedCode.tlog/CL.write.1.tlog
+Builds/VisualStudio2022/x64/Debug/Shared Code/FormantShiftProcessor.obj
+Builds/VisualStudio2022/x64/Debug/Shared Code/FFTProcessor.obj
+Builds/VisualStudio2022/.vs/Loom/v17/ipch/AutoPCH/f881b9fd61c3d928/FFTPROCESSOR.ipch
+Builds/VisualStudio2022/.vs/Loom/v17/ipch/AutoPCH/e51ab932471d79a/MORPHPROCESSOR.ipch
+Builds/VisualStudio2022/.vs/Loom/v17/ipch/AutoPCH/c6a2fd419d42ef7e/INCLUDE_JUCE_AUDIO_PLUGIN_CLIENT_STANDALONE.ipch
+Builds/VisualStudio2022/.vs/Loom/v17/ipch/AutoPCH/605ec0744dd9e936/MORPHPROCESSOR.ipch
+Builds/VisualStudio2022/.vs/Loom/v17/ipch/AutoPCH/5131c611430adb01/FORMANTSHIFTPROCESSOR.ipch
+Builds/VisualStudio2022/.vs/Loom/v17/ipch/AutoPCH/43cb6d22b59275bd/FORMANTSHIFTPROCESSOR.ipch
+Builds/VisualStudio2022/.vs/Loom/v17/ipch/AutoPCH/2d2f1bfaa60207a6/INCLUDE_JUCE_AUDIO_DEVICES.ipch
+Builds/VisualStudio2022/.vs/Loom/FileContentIndex/9d14c741-c325-460f-8d68-ed7fc7868057.vsidx
+Builds/VisualStudio2022/.vs/Loom/FileContentIndex/44fac918-e16b-478e-935c-0b2d0b6bfc97.vsidx

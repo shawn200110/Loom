@@ -9,69 +9,7 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-
 //==============================================================================
-STFTProcessor::STFTProcessor()
-{
-
-}
-
-void STFTProcessor::process(juce::dsp::ProcessContextReplacing<float> cntxt)
-{
-
-}
-
-void STFTProcessor::prepare(juce::dsp::ProcessSpec spec)
-{
-
-}
-
-MorphProcessor::MorphProcessor()
-{
-
-}
-
-void MorphProcessor::process(juce::dsp::ProcessContextReplacing<float> cntxt)
-{
-
-}
-
-void MorphProcessor::prepare(juce::dsp::ProcessSpec spec)
-{
-
-}
-
-FormantShiftProcessor::FormantShiftProcessor()
-{
-
-}
-
-void FormantShiftProcessor::process(juce::dsp::ProcessContextReplacing<float> cntxt)
-{
-
-}
-
-void FormantShiftProcessor::prepare(juce::dsp::ProcessSpec spec)
-{
-
-}
-
-InverseSTFTProcessor::InverseSTFTProcessor()
-{
-
-}
-
-void InverseSTFTProcessor::process(juce::dsp::ProcessContextReplacing<float> cntxt)
-{
-
-}
-
-void InverseSTFTProcessor::prepare(juce::dsp::ProcessSpec spec)
-{
-
-}
-
-
 LoomAudioProcessor::LoomAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
      : AudioProcessor (BusesProperties()
@@ -237,6 +175,15 @@ void LoomAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
     
     leftChain.process(leftContext);
     rightChain.process(rightContext);
+
+    fftProcessor.process(leftContext);
+
+    const juce::AudioBuffer<float>& frequencyData = fftProcessor.getFrequencyData();
+
+    for (int i = 0; i < frequencyData.getNumSamples(); ++i)
+    {
+        DBG("Frequency Bin " << i << ": " << frequencyData.getSample(0, i));
+    }
     
 }
 
