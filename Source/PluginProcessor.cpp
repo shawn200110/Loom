@@ -17,6 +17,7 @@ LoomAudioProcessor::LoomAudioProcessor()
                       #if ! JucePlugin_IsSynth
                        .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
                       #endif
+                       .withInput ("Aux Input", juce::AudioChannelSet::stereo(), true)
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
                        )
@@ -161,8 +162,13 @@ void LoomAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
     auto leftBlock = block.getSingleChannelBlock(0);
     auto rightBlock = block.getSingleChannelBlock(1);
 
+    auto leftAuxBlock = block.getSingleChannelBlock(2);
+    auto rightAuxBlock = block.getSingleChannelBlock(3 );
+
     juce::dsp::ProcessContextReplacing<float> leftContext(leftBlock);
     juce::dsp::ProcessContextReplacing<float> rightContext(rightBlock);
+    juce::dsp::ProcessContextReplacing<float> leftAuxContext(leftAuxBlock);
+    juce::dsp::ProcessContextReplacing<float> rightAuxContext(rightAuxBlock);
     // Code for passing the buffer through all the different blocks
 
 
@@ -175,14 +181,63 @@ void LoomAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
     
     leftChain.process(leftContext);
     rightChain.process(rightContext);
+    leftAuxChain.process(leftAuxContext);
+    rightAuxChain.process(rightAuxContext);
 
+    // get fft of all i/p channels
     fftProcessor.process(leftContext);
+    const juce::AudioBuffer<float>& frequencyDataL = fftProcessor.getFrequencyData();
+    fftProcessor.process(rightContext);
+    const juce::AudioBuffer<float>& frequencyDataR = fftProcessor.getFrequencyData();
+    fftProcessor.process(leftAuxContext);
+    const juce::AudioBuffer<float>& frequencyDataLA = fftProcessor.getFrequencyData();
+    fftProcessor.process(rightAuxContext);
+    const juce::AudioBuffer<float>& frequencyDataRA = fftProcessor.getFrequencyData();
 
-    const juce::AudioBuffer<float>& frequencyData = fftProcessor.getFrequencyData();
+    juce::AudioBuffer<float> combinedFrequencyData;
+    combinedFrequencyData.setSize(1, frequencyDataL.getNumSamples()); // Create a mono buffer to store the combined signal
 
-    for (int i = 0; i < frequencyData.getNumSamples(); ++i)
+    // Assuming you have two frequency buffers from the FFT of two signals
+    juce::dsp::AudioBlock<float> frequencyBlockL(frequencyDataL);
+    juce::dsp::AudioBlock<float> frequencyBlockLA(frequencyDataLA);
+    juce::dsp::AudioBlock<float> frequencyBlockR(frequencyDataR);
+    juce::dsp::AudioBlock<float> frequencyBlockRA(frequencyDataRA);
+
+    // Create contexts for both
+    juce::dsp::ProcessContextReplacing<float> frequencyContextR(frequencyBlockL);
+    juce::dsp::ProcessContextReplacing<float> frequencyContextRA(frequencyBlockLA);
+    juce::dsp::ProcessContextReplacing<float> frequencyContextR(frequencyBlockR);
+    juce::dsp::ProcessContextReplacing<float> frequencyContextRA(frequencyBlockRA);
+
+    // Now pass them both to your morph function
+    leftChain.get<0>().process(frequencyContextL, frequencyContextLA);
+    rightChain.get<0>().process(frequencyContextR, frequencyContextRA);
+
+    // Sum the frequency bins across all channels
+    for (int i = 0; i < frequencyDataL.getNumSamples(); ++i)
+    {
+        combinedFrequencyData.setSample(0, i,
+            (frequencyDataL.getSample(0, i) +
+             frequencyDataLA.getSample(0, i)) * 0.5f); // Average the signals
+    }
+
+    for (int i = 0; i < frequencyDataL.getNumSamples(); ++i)
+    {
+        combinedFrequencyData.setSample(0, i,
+            (frequencyDataR.getSample(0, i) +
+                frequencyDataRA.getSample(0, i)) * 0.5f); // Average the signals
+    }
+
+
+    /*for (int i = 0; i < frequencyData.getNumSamples(); ++i)
     {
         DBG("Frequency Bin " << i << ": " << frequencyData.getSample(0, i));
+    }*/
+
+    for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
+    {
+        buffer.getWritePointer(0)[sample] += buffer.getWritePointer(2)[sample]; // Mix aux left into main left
+        buffer.getWritePointer(1)[sample] += buffer.getWritePointer(3)[sample]; // Mix aux right into main right
     }
     
 }

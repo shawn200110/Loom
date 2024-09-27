@@ -107,7 +107,7 @@ private:
 
     //FirstStage leftChainV, rightChainV, leftChainH, rightChainH;
 
-    SecondStage leftChain, rightChain;
+    SecondStage leftChain, rightChain, leftAuxChain, rightAuxChain;
     FFTProcessor fftProcessor;
 
 
