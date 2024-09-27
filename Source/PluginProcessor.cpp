@@ -204,13 +204,13 @@ void LoomAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
 
         // Perform FFT on each of the accumulated blocks
         // get fft of all i/p channels
-        fftProcessor.process(leftContext);
+        fftProcessor.processFFT(leftContext);
         juce::AudioBuffer<float>& frequencyDataL = fftProcessor.getFrequencyData();
-        fftProcessor.process(rightContext);
+        fftProcessor.processFFT(rightContext);
         juce::AudioBuffer<float>& frequencyDataR = fftProcessor.getFrequencyData();
-        fftProcessor.process(leftAuxContext);
+        fftProcessor.processFFT(leftAuxContext);
         juce::AudioBuffer<float>& frequencyDataLA = fftProcessor.getFrequencyData();
-        fftProcessor.process(rightAuxContext);
+        fftProcessor.processFFT(rightAuxContext);
         juce::AudioBuffer<float>& frequencyDataRA = fftProcessor.getFrequencyData();
 
         //// Assuming you have two frequency buffers from the FFT of two signals
@@ -226,18 +226,19 @@ void LoomAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
         juce::dsp::ProcessContextReplacing<float> frequencyContextRA(frequencyBlockRA);
 
         morphProcessor.process(frequencyContextL, frequencyContextLA);
-        juce::dsp::AudioBlock<float> morphedFFTL = morphProcessor.getMorphedFFT();
+        juce::AudioBuffer<float> morphedFFTL = morphProcessor.getMorphedFFT();
         morphProcessor.process(frequencyContextR, frequencyContextRA);
-        juce::dsp::AudioBlock<float> morphedFFTR = morphProcessor.getMorphedFFT();
+        juce::AudioBuffer<float> morphedFFTR = morphProcessor.getMorphedFFT();
 
+        juce::dsp::AudioBlock<float> morphedBlockL(morphedFFTL);
+        juce::dsp::AudioBlock<float> morphedBlockR(morphedFFTR);
 
-        // Optionally modify frequency data for each channel here
+        juce::dsp::ProcessContextReplacing<float> morphedContextL(morphedBlockL);
+        juce::dsp::ProcessContextReplacing<float> morphedContextR(morphedBlockR);
 
         // Perform IFFT to convert frequency data back to time domain for each channel
-        //juce::AudioBuffer<float>& leftTimeDomainData = fftProcessor.performIFFT(leftFrequencyData);
-        //juce::AudioBuffer<float>& rightTimeDomainData = fftProcessor.performIFFT(rightFrequencyData);
-        //juce::AudioBuffer<float>& leftAuxTimeDomainData = fftProcessor.performIFFT(leftAuxFrequencyData);
-        //juce::AudioBuffer<float>& rightAuxTimeDomainData = fftProcessor.performIFFT(rightAuxFrequencyData);
+        fftProcessor.processIFFT(morphedContextL);
+        fftProcessor.processIFFT(morphedContextR);
 
         // Write processed data back to the output buffer
        /* buffer.copyFrom(0, 0, leftTimeDomainData, 0, 0, leftTimeDomainData.getNumSamples());

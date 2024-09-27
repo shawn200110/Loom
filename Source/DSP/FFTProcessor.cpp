@@ -16,7 +16,7 @@ void FFTProcessor::prepare(double sampleRate, int samplesPerBlock)
 }
 
 // Process the left and right channels
-void FFTProcessor::process(const juce::dsp::ProcessContextReplacing<float>& cntxt)
+void FFTProcessor::processFFT(const juce::dsp::ProcessContextReplacing<float>& cntxt)
 {
     // Get the audio blocks for left and right channels
     auto& block = cntxt.getOutputBlock();
@@ -31,9 +31,24 @@ void FFTProcessor::process(const juce::dsp::ProcessContextReplacing<float>& cntx
     //applyInverseFFT(block, fftData);
 }
 
+void FFTProcessor::processIFFT(const juce::dsp::ProcessContextReplacing<float>& cntxt)
+{
+    // Get the audio blocks for left and right channels
+    auto& block = cntxt.getOutputBlock();
+
+
+    // Process the left channel with FFT
+    applyInverseFFT(block, fftData);
+
+    // Perform any frequency domain processing here (both fftDataLeft and fftDataRight)
+
+    // Inverse FFT to convert back to time domain for left and right channels
+    //applyInverseFFT(block, fftData);
+}
+
 void FFTProcessor::storeFrequencyData(const juce::AudioBuffer<float>& fftData)
 {
-    frequencyData.setSize(1, fftSize / 2);
+    frequencyData.setSize(1, fftSize);
     // Store magnitude of FFT data into frequencyData buffer (can be modified to store real/imaginary as needed)
     for (int i = 0; i < fftSize / 2; ++i)
     {

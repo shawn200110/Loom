@@ -17,7 +17,11 @@ public:
     void prepare(double sampleRate, int samplesPerBlock);
 
     // Process the left and right channels
-    void process(const juce::dsp::ProcessContextReplacing<float>& cntxt);
+    void processFFT(const juce::dsp::ProcessContextReplacing<float>& cntxt);
+    void processIFFT(const juce::dsp::ProcessContextReplacing<float>& cntxt);
+
+    // Function to apply inverse FFT and copy the result back to the audio buffer
+    void applyInverseFFT(juce::dsp::AudioBlock<float>& audioBlock, juce::AudioBuffer<float>& fftData);
 
     juce::AudioBuffer<float>& getFrequencyData()  { return frequencyData; }
 
@@ -33,8 +37,8 @@ private:
     // Function to apply FFT to a single channel (left or right)
     void applyFFT(juce::dsp::AudioBlock<float>& audioBlock, juce::AudioBuffer<float>& fftData);
 
-    // Function to apply inverse FFT and copy the result back to the audio buffer
-    void applyInverseFFT(juce::dsp::AudioBlock<float>& audioBlock, juce::AudioBuffer<float>& fftData);
+    
+    
 
     void storeFrequencyData(const juce::AudioBuffer<float>& fftData);
 };
