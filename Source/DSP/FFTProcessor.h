@@ -19,7 +19,7 @@ public:
     // Process the left and right channels
     void process(const juce::dsp::ProcessContextReplacing<float>& cntxt);
 
-    const juce::AudioBuffer<float>& getFrequencyData() const { return frequencyData; }
+    juce::AudioBuffer<float>& getFrequencyData()  { return frequencyData; }
 
 private:
     int fftSize;

@@ -104,10 +104,13 @@ void LoomAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     spec.numChannels = 1;
     spec.sampleRate = sampleRate;
 
-    leftChain.prepare(spec);
-    rightChain.prepare(spec);
+    fftProcessor.prepare(sampleRate, samplesPerBlock);
 
- 
+    int fftBlockSize = 1024;
+    leftChannelFifo.prepare(fftBlockSize);
+    rightChannelFifo.prepare(fftBlockSize);
+    leftAuxChannelFifo.prepare(fftBlockSize);
+    rightAuxChannelFifo.prepare(fftBlockSize);
 }
 
 void LoomAudioProcessor::releaseResources()
@@ -159,86 +162,104 @@ void LoomAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
 
     juce::dsp::AudioBlock<float> block(buffer);
 
-    auto leftBlock = block.getSingleChannelBlock(0);
-    auto rightBlock = block.getSingleChannelBlock(1);
-
-    auto leftAuxBlock = block.getSingleChannelBlock(2);
-    auto rightAuxBlock = block.getSingleChannelBlock(3 );
-
-    juce::dsp::ProcessContextReplacing<float> leftContext(leftBlock);
-    juce::dsp::ProcessContextReplacing<float> rightContext(rightBlock);
-    juce::dsp::ProcessContextReplacing<float> leftAuxContext(leftAuxBlock);
-    juce::dsp::ProcessContextReplacing<float> rightAuxContext(rightAuxBlock);
-    // Code for passing the buffer through all the different blocks
-
-
+    leftChannelFifo.update(buffer);
+    rightChannelFifo.update(buffer);
+    leftAuxChannelFifo.update(buffer);
+    rightAuxChannelFifo.update(buffer);
     
 
-    /*buffer.clear();
 
-    juce::dsp::ProcessContextReplacing<float> stereoContext(block);
-    osc.process(stereoContext);*/
+
+
+
+    // Check if all FIFOs have a complete block ready for FFT processing
+    if (leftChannelFifo.getNumCompleteBuffersAvailable() > 0 &&
+        rightChannelFifo.getNumCompleteBuffersAvailable() > 0 &&
+        leftAuxChannelFifo.getNumCompleteBuffersAvailable() > 0 &&
+        rightAuxChannelFifo.getNumCompleteBuffersAvailable() > 0)
+    {
+        // Create buffers to hold the FFT input
+        juce::AudioBuffer<float> leftFftInput, rightFftInput, leftAuxFftInput, rightAuxFftInput;
+
+        // Pull the complete buffer from each FIFO
+        leftChannelFifo.getAudioBuffer(leftFftInput);
+        rightChannelFifo.getAudioBuffer(rightFftInput);
+        leftAuxChannelFifo.getAudioBuffer(leftAuxFftInput);
+        rightAuxChannelFifo.getAudioBuffer(rightAuxFftInput);
+
+        /*auto leftBlock = block.getSingleChannelBlock(0);
+        auto rightBlock = block.getSingleChannelBlock(1);
+        auto leftAuxBlock = block.getSingleChannelBlock(2);
+        auto rightAuxBlock = block.getSingleChannelBlock(3);*/
+
+        juce::dsp::AudioBlock<float> leftBlock(leftFftInput);
+        juce::dsp::AudioBlock<float> rightBlock(rightFftInput);
+        juce::dsp::AudioBlock<float> leftAuxBlock(leftAuxFftInput);
+        juce::dsp::AudioBlock<float> rightAuxBlock(rightAuxFftInput);
+
+        juce::dsp::ProcessContextReplacing<float> leftContext(leftBlock);
+        juce::dsp::ProcessContextReplacing<float> rightContext(rightBlock);
+        juce::dsp::ProcessContextReplacing<float> leftAuxContext(leftAuxBlock);
+        juce::dsp::ProcessContextReplacing<float> rightAuxContext(rightAuxBlock);
+
+        // Perform FFT on each of the accumulated blocks
+        // get fft of all i/p channels
+        fftProcessor.process(leftContext);
+        juce::AudioBuffer<float>& frequencyDataL = fftProcessor.getFrequencyData();
+        fftProcessor.process(rightContext);
+        juce::AudioBuffer<float>& frequencyDataR = fftProcessor.getFrequencyData();
+        fftProcessor.process(leftAuxContext);
+        juce::AudioBuffer<float>& frequencyDataLA = fftProcessor.getFrequencyData();
+        fftProcessor.process(rightAuxContext);
+        juce::AudioBuffer<float>& frequencyDataRA = fftProcessor.getFrequencyData();
+
+        //// Assuming you have two frequency buffers from the FFT of two signals
+        juce::dsp::AudioBlock<float> frequencyBlockL(frequencyDataL);
+        juce::dsp::AudioBlock<float> frequencyBlockLA(frequencyDataLA);
+        juce::dsp::AudioBlock<float> frequencyBlockR(frequencyDataR);
+        juce::dsp::AudioBlock<float> frequencyBlockRA(frequencyDataRA);
+
+        //// Create contexts for both
+        juce::dsp::ProcessContextReplacing<float> frequencyContextL(frequencyBlockL);
+        juce::dsp::ProcessContextReplacing<float> frequencyContextLA(frequencyBlockLA);
+        juce::dsp::ProcessContextReplacing<float> frequencyContextR(frequencyBlockR);
+        juce::dsp::ProcessContextReplacing<float> frequencyContextRA(frequencyBlockRA);
+
+        morphProcessor.process(frequencyContextL, frequencyContextLA);
+        juce::dsp::AudioBlock<float> morphedFFTL = morphProcessor.getMorphedFFT();
+        morphProcessor.process(frequencyContextR, frequencyContextRA);
+        juce::dsp::AudioBlock<float> morphedFFTR = morphProcessor.getMorphedFFT();
+
+
+        // Optionally modify frequency data for each channel here
+
+        // Perform IFFT to convert frequency data back to time domain for each channel
+        //juce::AudioBuffer<float>& leftTimeDomainData = fftProcessor.performIFFT(leftFrequencyData);
+        //juce::AudioBuffer<float>& rightTimeDomainData = fftProcessor.performIFFT(rightFrequencyData);
+        //juce::AudioBuffer<float>& leftAuxTimeDomainData = fftProcessor.performIFFT(leftAuxFrequencyData);
+        //juce::AudioBuffer<float>& rightAuxTimeDomainData = fftProcessor.performIFFT(rightAuxFrequencyData);
+
+        // Write processed data back to the output buffer
+       /* buffer.copyFrom(0, 0, leftTimeDomainData, 0, 0, leftTimeDomainData.getNumSamples());
+        buffer.copyFrom(1, 0, rightTimeDomainData, 0, 0, rightTimeDomainData.getNumSamples());
+        buffer.copyFrom(2, 0, leftAuxTimeDomainData, 0, 0, leftAuxTimeDomainData.getNumSamples());
+        buffer.copyFrom(3, 0, rightAuxTimeDomainData, 0, 0, rightAuxTimeDomainData.getNumSamples());*/
+    }
+  
+   
+
     
-    leftChain.process(leftContext);
-    rightChain.process(rightContext);
-    leftAuxChain.process(leftAuxContext);
-    rightAuxChain.process(rightAuxContext);
-
-    // get fft of all i/p channels
-    fftProcessor.process(leftContext);
-    const juce::AudioBuffer<float>& frequencyDataL = fftProcessor.getFrequencyData();
-    fftProcessor.process(rightContext);
-    const juce::AudioBuffer<float>& frequencyDataR = fftProcessor.getFrequencyData();
-    fftProcessor.process(leftAuxContext);
-    const juce::AudioBuffer<float>& frequencyDataLA = fftProcessor.getFrequencyData();
-    fftProcessor.process(rightAuxContext);
-    const juce::AudioBuffer<float>& frequencyDataRA = fftProcessor.getFrequencyData();
-
-    juce::AudioBuffer<float> combinedFrequencyData;
-    combinedFrequencyData.setSize(1, frequencyDataL.getNumSamples()); // Create a mono buffer to store the combined signal
-
-    // Assuming you have two frequency buffers from the FFT of two signals
-    juce::dsp::AudioBlock<float> frequencyBlockL(frequencyDataL);
-    juce::dsp::AudioBlock<float> frequencyBlockLA(frequencyDataLA);
-    juce::dsp::AudioBlock<float> frequencyBlockR(frequencyDataR);
-    juce::dsp::AudioBlock<float> frequencyBlockRA(frequencyDataRA);
-
-    // Create contexts for both
-    juce::dsp::ProcessContextReplacing<float> frequencyContextR(frequencyBlockL);
-    juce::dsp::ProcessContextReplacing<float> frequencyContextRA(frequencyBlockLA);
-    juce::dsp::ProcessContextReplacing<float> frequencyContextR(frequencyBlockR);
-    juce::dsp::ProcessContextReplacing<float> frequencyContextRA(frequencyBlockRA);
-
-    // Now pass them both to your morph function
-    leftChain.get<0>().process(frequencyContextL, frequencyContextLA);
-    rightChain.get<0>().process(frequencyContextR, frequencyContextRA);
-
-    // Sum the frequency bins across all channels
-    for (int i = 0; i < frequencyDataL.getNumSamples(); ++i)
-    {
-        combinedFrequencyData.setSample(0, i,
-            (frequencyDataL.getSample(0, i) +
-             frequencyDataLA.getSample(0, i)) * 0.5f); // Average the signals
-    }
-
-    for (int i = 0; i < frequencyDataL.getNumSamples(); ++i)
-    {
-        combinedFrequencyData.setSample(0, i,
-            (frequencyDataR.getSample(0, i) +
-                frequencyDataRA.getSample(0, i)) * 0.5f); // Average the signals
-    }
-
 
     /*for (int i = 0; i < frequencyData.getNumSamples(); ++i)
     {
         DBG("Frequency Bin " << i << ": " << frequencyData.getSample(0, i));
     }*/
 
-    for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
-    {
-        buffer.getWritePointer(0)[sample] += buffer.getWritePointer(2)[sample]; // Mix aux left into main left
-        buffer.getWritePointer(1)[sample] += buffer.getWritePointer(3)[sample]; // Mix aux right into main right
-    }
+    //for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
+    //{
+    //    buffer.getWritePointer(0)[sample] += buffer.getWritePointer(2)[sample]; // Mix aux left into main left
+    //    buffer.getWritePointer(1)[sample] += buffer.getWritePointer(3)[sample]; // Mix aux right into main right
+    //}
     
 }
 

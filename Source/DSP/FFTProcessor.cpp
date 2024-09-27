@@ -33,6 +33,7 @@ void FFTProcessor::process(const juce::dsp::ProcessContextReplacing<float>& cntx
 
 void FFTProcessor::storeFrequencyData(const juce::AudioBuffer<float>& fftData)
 {
+    frequencyData.setSize(1, fftSize / 2);
     // Store magnitude of FFT data into frequencyData buffer (can be modified to store real/imaginary as needed)
     for (int i = 0; i < fftSize / 2; ++i)
     {
@@ -60,6 +61,15 @@ void FFTProcessor::applyFFT(juce::dsp::AudioBlock<float>& audioBlock, juce::Audi
 
     // Perform forward FFT
     fft.performRealOnlyForwardTransform(fftData.getWritePointer(0));
+
+    DBG("FFT Output Data:");
+    for (int i = 0; i < fftSize; ++i)
+    {
+        if (i < 10)  // Again, limit to the first 10 values for easier viewing
+            DBG("FFT Data " << i << ": " << fftData.getSample(0, i));
+    }
+
+    storeFrequencyData(fftData);
 }
 
 // Function to apply inverse FFT and copy the result back to the audio buffer
