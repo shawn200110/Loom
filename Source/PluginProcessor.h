@@ -250,6 +250,10 @@ private:
     MorphProcessor morphProcessor;
     FormantShiftProcessor formantProcessor;
 
+    int fftSize = 1024;  // FFT block size
+    int overlapSize = fftSize / 2;  // 50% overlap
+
+    juce::AudioBuffer<float> overlapBuffer;
 
 
         

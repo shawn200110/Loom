@@ -32,12 +32,25 @@ void MorphProcessor::applyMorph(juce::dsp::AudioBlock<float>& sound,
     morphedFFT.setSize(1, numSamples);
 
     float* morphedData = new float[numSamples];
+    float maxMagnitude = 0.0f;  // Track the maximum magnitude for normalization
 
     // Copy input samples into FFT buffer (zero-pad if necessary)
     for (int i = 0; i < numSamples; ++i)
     {
-        morphedData[i] = (frequencyData[i] * frequencyDataA[i]) / 50;
+        //morphedData[i] = (frequencyData[i] * frequencyDataA[i]) / 50;
+        morphedData[i] = frequencyDataA[i];
+
+        if (morphedData[i] > maxMagnitude)
+            maxMagnitude = morphedData[i];
     };
+
+    if (maxMagnitude > 0.0f)  // Avoid division by zero
+    {
+        for (int i = 0; i < numSamples; ++i)
+        {
+            morphedData[i] /= maxMagnitude;  // Scale all values by the max magnitude
+        }
+    }
 
     morphedFFT.copyFrom(0, 0, morphedData, numSamples);
 }

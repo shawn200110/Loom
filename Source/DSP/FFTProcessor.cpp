@@ -90,6 +90,7 @@ void FFTProcessor::applyFFT(juce::dsp::AudioBlock<float>& audioBlock, juce::Audi
 // Function to apply inverse FFT and copy the result back to the audio buffer
 void FFTProcessor::applyInverseFFT(juce::dsp::AudioBlock<float>& audioBlock, juce::AudioBuffer<float>& fftData)
 {
+    timeData.setSize(1, fftSize);
     // Perform inverse FFT
     fft.performRealOnlyInverseTransform(fftData.getWritePointer(0));
 
@@ -99,4 +100,6 @@ void FFTProcessor::applyInverseFFT(juce::dsp::AudioBlock<float>& audioBlock, juc
     {
         outputSamples[i] = fftData.getSample(0, i);
     }
+
+    timeData.copyFrom(0, 0, outputSamples, audioBlock.getNumSamples());
 }

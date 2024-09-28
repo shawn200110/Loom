@@ -106,11 +106,14 @@ void LoomAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 
     fftProcessor.prepare(sampleRate, samplesPerBlock);
 
-    int fftBlockSize = 1024;
+    int fftBlockSize = 4096;
     leftChannelFifo.prepare(fftBlockSize);
     rightChannelFifo.prepare(fftBlockSize);
     leftAuxChannelFifo.prepare(fftBlockSize);
     rightAuxChannelFifo.prepare(fftBlockSize);
+
+    overlapBuffer.setSize(1, overlapSize);  // 1 channel, overlapSize samples
+    overlapBuffer.clear();
 }
 
 void LoomAudioProcessor::releaseResources()
@@ -168,7 +171,11 @@ void LoomAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
     rightAuxChannelFifo.update(buffer);
     
 
-
+    if (overlapBuffer.getNumSamples() != overlapSize)
+    {
+        overlapBuffer.setSize(1, overlapSize);  // Initialize with overlap size
+        overlapBuffer.clear();
+    }
 
 
 
@@ -226,9 +233,9 @@ void LoomAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
         juce::dsp::ProcessContextReplacing<float> frequencyContextRA(frequencyBlockRA);
 
         morphProcessor.process(frequencyContextL, frequencyContextLA);
-        juce::AudioBuffer<float> morphedFFTL = morphProcessor.getMorphedFFT();
+        juce::AudioBuffer<float>& morphedFFTL = morphProcessor.getMorphedFFT();
         morphProcessor.process(frequencyContextR, frequencyContextRA);
-        juce::AudioBuffer<float> morphedFFTR = morphProcessor.getMorphedFFT();
+        juce::AudioBuffer<float>& morphedFFTR = morphProcessor.getMorphedFFT();
 
         juce::dsp::AudioBlock<float> morphedBlockL(morphedFFTL);
         juce::dsp::AudioBlock<float> morphedBlockR(morphedFFTR);
@@ -238,30 +245,35 @@ void LoomAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
 
         // Perform IFFT to convert frequency data back to time domain for each channel
         fftProcessor.processIFFT(morphedContextL);
+        juce::AudioBuffer<float>& outputDataL = fftProcessor.getTimeData();
         fftProcessor.processIFFT(morphedContextR);
+        juce::AudioBuffer<float>& outputDataR = fftProcessor.getTimeData();
 
-        // Write processed data back to the output buffer
-       /* buffer.copyFrom(0, 0, leftTimeDomainData, 0, 0, leftTimeDomainData.getNumSamples());
-        buffer.copyFrom(1, 0, rightTimeDomainData, 0, 0, rightTimeDomainData.getNumSamples());
-        buffer.copyFrom(2, 0, leftAuxTimeDomainData, 0, 0, leftAuxTimeDomainData.getNumSamples());
-        buffer.copyFrom(3, 0, rightAuxTimeDomainData, 0, 0, rightAuxTimeDomainData.getNumSamples());*/
+        // Determine the number of samples to copy based on the smaller buffer size
+        int numSamplesToCopy = juce::jmin(buffer.getNumSamples(), outputDataL.getNumSamples());
+
+        // Write the processed data back to the output buffer (only copy the number of samples that fit)
+        //buffer.copyFrom(0, 0, outputDataL, 0, 0, numSamplesToCopy);
+        //buffer.copyFrom(1, 0, outputDataR, 0, 0, numSamplesToCopy);
+
+        // Step 1: Add the first half of the IFFT result to the overlap from the previous block
+        for (int i = 0; i < overlapSize; ++i)
+        {
+            // Add the saved overlap to the first half of the new block
+            float currentSampleL = buffer.getSample(0, i) + overlapBuffer.getSample(0, i);
+            float currentSampleR = buffer.getSample(1, i) + overlapBuffer.getSample(0, i);
+
+            // Set the final value back to the buffer
+            buffer.setSample(0, i, currentSampleL);
+            //buffer.setSample(1, i, currentSampleR);
+        }
+
+        // Step 2: Copy the second half of the IFFT result into the overlap buffer for the next block
+        for (int i = 0; i < overlapSize; ++i)
+        {
+            overlapBuffer.setSample(0, i, outputDataL.getSample(0, overlapSize + i));
+        }
     }
-  
-   
-
-    
-
-    /*for (int i = 0; i < frequencyData.getNumSamples(); ++i)
-    {
-        DBG("Frequency Bin " << i << ": " << frequencyData.getSample(0, i));
-    }*/
-
-    //for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
-    //{
-    //    buffer.getWritePointer(0)[sample] += buffer.getWritePointer(2)[sample]; // Mix aux left into main left
-    //    buffer.getWritePointer(1)[sample] += buffer.getWritePointer(3)[sample]; // Mix aux right into main right
-    //}
-    
 }
 
 //==============================================================================

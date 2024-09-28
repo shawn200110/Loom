@@ -4,7 +4,7 @@ class FFTProcessor
 {
 public:
     // Default constructor
-    FFTProcessor() : fftSize(1024), fft(10)  // Default to 1024-point FFT (fftOrder = 10)
+    FFTProcessor() : fftSize(4096), fft(10)  // Default to 1024-point FFT (fftOrder = 10)
     {
         fftData.setSize(1, fftSize * 2);  // Allocate buffer for FFT data
     }
@@ -24,6 +24,7 @@ public:
     void applyInverseFFT(juce::dsp::AudioBlock<float>& audioBlock, juce::AudioBuffer<float>& fftData);
 
     juce::AudioBuffer<float>& getFrequencyData()  { return frequencyData; }
+    juce::AudioBuffer<float>& getTimeData() { return timeData; }
 
 private:
     int fftSize;
@@ -33,6 +34,7 @@ private:
     juce::dsp::FFT fft;  // FFT processor
     juce::AudioBuffer<float> fftData;  // Buffer for the left channel FFT data
     juce::AudioBuffer<float> frequencyData;
+    juce::AudioBuffer<float> timeData;
 
     // Function to apply FFT to a single channel (left or right)
     void applyFFT(juce::dsp::AudioBlock<float>& audioBlock, juce::AudioBuffer<float>& fftData);

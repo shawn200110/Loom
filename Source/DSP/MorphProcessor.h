@@ -3,7 +3,7 @@
 class MorphProcessor
 {
 public:
-    MorphProcessor() : fftSize(1024)
+    MorphProcessor() : fftSize(4096)
     {
         morphedFFT.setSize(1, fftSize);
     };
@@ -11,7 +11,7 @@ public:
     void process(const juce::dsp::ProcessContextReplacing<float>& cntxt1,
                  const juce::dsp::ProcessContextReplacing<float>& cntxt2);
 
-    juce::AudioBuffer<float> getMorphedFFT() { return morphedFFT; }
+    juce::AudioBuffer<float>& getMorphedFFT() { return morphedFFT; }
 
     void applyMorph(juce::dsp::AudioBlock<float>& sound,
         juce::dsp::AudioBlock<float>& soundA);
