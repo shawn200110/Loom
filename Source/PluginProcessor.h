@@ -104,6 +104,11 @@ struct SingleChannelSampleFifo
         jassert(buffer.getNumChannels() > channelToUse);
         auto* channelPtr = buffer.getReadPointer(channelToUse);
 
+        for (int i = 0; i < 10; ++i)
+        {
+            DBG("channelPtr " << i << ": " << channelPtr[i]);
+        };
+
         for (int i = 0; i < buffer.getNumSamples(); ++i)
         {
             pushNextSampleIntoFifo(channelPtr[i]);

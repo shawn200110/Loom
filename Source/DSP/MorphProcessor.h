@@ -3,7 +3,7 @@
 class MorphProcessor
 {
 public:
-    MorphProcessor() : fftSize(4096)
+    MorphProcessor() : fftSize(2048)
     {
         morphedFFT.setSize(1, fftSize);
     };

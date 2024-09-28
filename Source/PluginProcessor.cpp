@@ -178,7 +178,6 @@ void LoomAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
     }
 
 
-
     // Check if all FIFOs have a complete block ready for FFT processing
     if (leftChannelFifo.getNumCompleteBuffersAvailable() > 0 &&
         rightChannelFifo.getNumCompleteBuffersAvailable() > 0 &&
@@ -194,85 +193,166 @@ void LoomAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
         leftAuxChannelFifo.getAudioBuffer(leftAuxFftInput);
         rightAuxChannelFifo.getAudioBuffer(rightAuxFftInput);
 
-        /*auto leftBlock = block.getSingleChannelBlock(0);
-        auto rightBlock = block.getSingleChannelBlock(1);
-        auto leftAuxBlock = block.getSingleChannelBlock(2);
-        auto rightAuxBlock = block.getSingleChannelBlock(3);*/
+        auto* LPtr = leftFftInput.getReadPointer(0);
+        auto* LAPtr = leftAuxFftInput.getReadPointer(0);
 
-        juce::dsp::AudioBlock<float> leftBlock(leftFftInput);
-        juce::dsp::AudioBlock<float> rightBlock(rightFftInput);
-        juce::dsp::AudioBlock<float> leftAuxBlock(leftAuxFftInput);
-        juce::dsp::AudioBlock<float> rightAuxBlock(rightAuxFftInput);
-
-        juce::dsp::ProcessContextReplacing<float> leftContext(leftBlock);
-        juce::dsp::ProcessContextReplacing<float> rightContext(rightBlock);
-        juce::dsp::ProcessContextReplacing<float> leftAuxContext(leftAuxBlock);
-        juce::dsp::ProcessContextReplacing<float> rightAuxContext(rightAuxBlock);
-
-        // Perform FFT on each of the accumulated blocks
-        // get fft of all i/p channels
-        fftProcessor.processFFT(leftContext);
-        juce::AudioBuffer<float>& frequencyDataL = fftProcessor.getFrequencyData();
-        fftProcessor.processFFT(rightContext);
-        juce::AudioBuffer<float>& frequencyDataR = fftProcessor.getFrequencyData();
-        fftProcessor.processFFT(leftAuxContext);
-        juce::AudioBuffer<float>& frequencyDataLA = fftProcessor.getFrequencyData();
-        fftProcessor.processFFT(rightAuxContext);
-        juce::AudioBuffer<float>& frequencyDataRA = fftProcessor.getFrequencyData();
-
-        //// Assuming you have two frequency buffers from the FFT of two signals
-        juce::dsp::AudioBlock<float> frequencyBlockL(frequencyDataL);
-        juce::dsp::AudioBlock<float> frequencyBlockLA(frequencyDataLA);
-        juce::dsp::AudioBlock<float> frequencyBlockR(frequencyDataR);
-        juce::dsp::AudioBlock<float> frequencyBlockRA(frequencyDataRA);
-
-        //// Create contexts for both
-        juce::dsp::ProcessContextReplacing<float> frequencyContextL(frequencyBlockL);
-        juce::dsp::ProcessContextReplacing<float> frequencyContextLA(frequencyBlockLA);
-        juce::dsp::ProcessContextReplacing<float> frequencyContextR(frequencyBlockR);
-        juce::dsp::ProcessContextReplacing<float> frequencyContextRA(frequencyBlockRA);
-
-        morphProcessor.process(frequencyContextL, frequencyContextLA);
-        juce::AudioBuffer<float>& morphedFFTL = morphProcessor.getMorphedFFT();
-        morphProcessor.process(frequencyContextR, frequencyContextRA);
-        juce::AudioBuffer<float>& morphedFFTR = morphProcessor.getMorphedFFT();
-
-        juce::dsp::AudioBlock<float> morphedBlockL(morphedFFTL);
-        juce::dsp::AudioBlock<float> morphedBlockR(morphedFFTR);
-
-        juce::dsp::ProcessContextReplacing<float> morphedContextL(morphedBlockL);
-        juce::dsp::ProcessContextReplacing<float> morphedContextR(morphedBlockR);
-
-        // Perform IFFT to convert frequency data back to time domain for each channel
-        fftProcessor.processIFFT(morphedContextL);
-        juce::AudioBuffer<float>& outputDataL = fftProcessor.getTimeData();
-        fftProcessor.processIFFT(morphedContextR);
-        juce::AudioBuffer<float>& outputDataR = fftProcessor.getTimeData();
-
-        // Determine the number of samples to copy based on the smaller buffer size
-        int numSamplesToCopy = juce::jmin(buffer.getNumSamples(), outputDataL.getNumSamples());
-
-        // Write the processed data back to the output buffer (only copy the number of samples that fit)
-        //buffer.copyFrom(0, 0, outputDataL, 0, 0, numSamplesToCopy);
-        //buffer.copyFrom(1, 0, outputDataR, 0, 0, numSamplesToCopy);
-
-        // Step 1: Add the first half of the IFFT result to the overlap from the previous block
-        for (int i = 0; i < overlapSize; ++i)
+        for (int i = 0; i < 10; ++i)
         {
-            // Add the saved overlap to the first half of the new block
-            float currentSampleL = buffer.getSample(0, i) + overlapBuffer.getSample(0, i);
-            float currentSampleR = buffer.getSample(1, i) + overlapBuffer.getSample(0, i);
+           DBG("LPtr " << i << ": " << LPtr[i]);
+           DBG("LAPtr " << i << ": " << LAPtr[i]);
+         };
 
-            // Set the final value back to the buffer
-            buffer.setSample(0, i, currentSampleL);
-            //buffer.setSample(1, i, currentSampleR);
-        }
+        fftProcessor.processFFT(leftFftInput.getWritePointer(0));
+        float* magL = fftProcessor.getMagnitude();
+        float* phaseL = fftProcessor.getPhase();
 
-        // Step 2: Copy the second half of the IFFT result into the overlap buffer for the next block
-        for (int i = 0; i < overlapSize; ++i)
+        /*for (int i = 0; i < 10; ++i)
         {
-            overlapBuffer.setSample(0, i, outputDataL.getSample(0, overlapSize + i));
-        }
+           DBG("magL " << i << ": " << magL[i]);
+        };*/
+
+        fftProcessor.processFFT(rightFftInput.getWritePointer(0));
+        float* magR = fftProcessor.getMagnitude();
+        float* phaseR = fftProcessor.getPhase();
+
+        /*for (int i = 0; i < 10; ++i)
+        {
+            DBG("magR " << i << ": " << magR[i]);
+        };*/
+
+        fftProcessor.processFFT(leftAuxFftInput.getWritePointer(0));
+        float* magLA = fftProcessor.getMagnitude();
+        float* phaseLA = fftProcessor.getPhase();
+
+        for (int i = 0; i < 10; ++i)
+        {
+            DBG("magLA " << i << ": " << magLA[i]);
+        };
+
+        fftProcessor.processFFT(rightAuxFftInput.getWritePointer(0));
+        float* magRA = fftProcessor.getMagnitude();
+        float* phaseRA = fftProcessor.getPhase();
+
+        for (int i = 0; i < 10; ++i)
+        {
+            DBG("magRA " << i << ": " << magRA[i]);
+        };
+
+           // for (int i = 0; i < fftSize; ++i)
+           //{
+           //    if (i < 20)  // Again, limit to the first 10 values for easier viewing
+           //    DBG("magL " << i << ": " << magL[i]);
+           //    DBG("magR " << i << ": " << magR[i]);
+           //    DBG("magLA " << i << ": " << magLA[i]);
+           //    DBG("magRA " << i << ": " << magRA[i]);
+           //};
+
+        //    juce::dsp::AudioBlock<float> leftBlock(leftFftInput);
+        //    juce::dsp::AudioBlock<float> rightBlock(rightFftInput);
+        //    juce::dsp::AudioBlock<float> leftAuxBlock(leftAuxFftInput);
+        //    juce::dsp::AudioBlock<float> rightAuxBlock(rightAuxFftInput);
+
+        //    juce::dsp::ProcessContextReplacing<float> leftContext(leftBlock);
+        //    juce::dsp::ProcessContextReplacing<float> rightContext(rightBlock);
+        //    juce::dsp::ProcessContextReplacing<float> leftAuxContext(leftAuxBlock);
+        //    juce::dsp::ProcessContextReplacing<float> rightAuxContext(rightAuxBlock);
+
+        //    // Perform FFT on each of the accumulated blocks
+        //    // get fft of all i/p channels
+        //    fftProcessor.processFFT(leftContext);
+        //    juce::AudioBuffer<float>& frequencyDataL = fftProcessor.getFrequencyData();
+        //    fftProcessor.processFFT(rightContext);
+        //    juce::AudioBuffer<float>& frequencyDataR = fftProcessor.getFrequencyData();
+        //    fftProcessor.processFFT(leftAuxContext);
+        //    juce::AudioBuffer<float>& frequencyDataLA = fftProcessor.getFrequencyData();
+        //    fftProcessor.processFFT(rightAuxContext);
+        //    juce::AudioBuffer<float>& frequencyDataRA = fftProcessor.getFrequencyData();
+
+
+        //    for (int i = 0; i < fftSize; ++i)
+        //    {
+        //        if (i < 20)  // Again, limit to the first 10 values for easier viewing
+        //        DBG("freqDataL " << i << ": " << frequencyDataL.getSample(0, i));
+        //        DBG("freqDataLA " << i << ": " << frequencyDataLA.getSample(0, i));
+        //    };
+
+        //    //// Assuming you have two frequency buffers from the FFT of two signals
+        //    //juce::dsp::AudioBlock<float> frequencyBlockL(frequencyDataL);
+        //    //juce::dsp::AudioBlock<float> frequencyBlockLA(frequencyDataLA);
+        //    //juce::dsp::AudioBlock<float> frequencyBlockR(frequencyDataR);
+        //    //juce::dsp::AudioBlock<float> frequencyBlockRA(frequencyDataRA);
+
+        //    ////// Create contexts for both
+        //    //juce::dsp::ProcessContextReplacing<float> frequencyContextL(frequencyBlockL);
+        //    //juce::dsp::ProcessContextReplacing<float> frequencyContextLA(frequencyBlockLA);
+        //    //juce::dsp::ProcessContextReplacing<float> frequencyContextR(frequencyBlockR);
+        //    //juce::dsp::ProcessContextReplacing<float> frequencyContextRA(frequencyBlockRA);
+
+        //    //morphProcessor.process(frequencyContextL, frequencyContextLA);
+        //    //juce::AudioBuffer<float>& morphedFFTL = morphProcessor.getMorphedFFT();
+        //    //morphProcessor.process(frequencyContextR, frequencyContextRA);
+        //    //juce::AudioBuffer<float>& morphedFFTR = morphProcessor.getMorphedFFT();
+
+
+        //    // Experimental ////////////////////////////////////////////
+        //    //juce::dsp::AudioBlock<float> frequencyBlockLA(frequencyDataLA);
+        //    //juce::dsp::AudioBlock<float> frequencyBlockRA(frequencyDataRA);
+
+        //    //juce::dsp::ProcessContextReplacing<float> frequencyContextLA(frequencyBlockLA);
+        //    //juce::dsp::ProcessContextReplacing<float> frequencyContextRA(frequencyBlockRA);
+
+        //    //fftProcessor.processIFFT(frequencyContextLA);
+        //    //juce::AudioBuffer<float>& outputDataL = fftProcessor.getTimeData();
+        //    //fftProcessor.processIFFT(frequencyContextRA);
+        //    //juce::AudioBuffer<float>& outputDataR = fftProcessor.getTimeData();
+
+        //    ///////////////////////////////////////////////////////////
+
+
+        //    //juce::dsp::AudioBlock<float> morphedBlockL(morphedFFTL);
+        //    //juce::dsp::AudioBlock<float> morphedBlockR(morphedFFTR);
+
+        //    //juce::dsp::ProcessContextReplacing<float> morphedContextL(morphedBlockL);
+        //    //juce::dsp::ProcessContextReplacing<float> morphedContextR(morphedBlockR);
+
+        //    //// Perform IFFT to convert frequency data back to time domain for each channel
+        //    //fftProcessor.processIFFT(morphedContextL);
+        //    //juce::AudioBuffer<float>& outputDataL = fftProcessor.getTimeData();
+        //    //fftProcessor.processIFFT(morphedContextR);
+        //    //juce::AudioBuffer<float>& outputDataR = fftProcessor.getTimeData();
+
+        //    //// Determine the number of samples to copy based on the smaller buffer size
+        //    //int numSamplesToCopy = juce::jmin(buffer.getNumSamples(), outputDataL.getNumSamples());
+
+        //    //// Write the processed data back to the output buffer (only copy the number of samples that fit)
+        //    //buffer.copyFrom(0, 0, outputDataL, 0, 0, numSamplesToCopy);
+        //    //buffer.copyFrom(1, 0, outputDataR, 0, 0, numSamplesToCopy);
+
+        //    // Step 1: Add the first half of the IFFT result to the overlap from the previous block
+        //    for (int i = 0; i < overlapSize; ++i)
+        //    {
+        //        // Add the saved overlap to the first half of the new block
+        //        float currentSampleL = buffer.getSample(0, i) + overlapBuffer.getSample(0, i);
+        //        float currentSampleR = buffer.getSample(1, i) + overlapBuffer.getSample(0, i);
+
+        //        // Set the final value back to the buffer
+        //        buffer.setSample(0, i, currentSampleL);
+
+        //        DBG("Time Data:");
+        //        for (int i = 0; i < fftSize; ++i)
+        //        {
+        //            if (i < 10)  // Again, limit to the first 10 values for easier viewing
+        //                DBG("Time Data" << i << ": " << currentSampleL);
+        //        };
+        //        //buffer.setSample(1, i, currentSampleR);
+        //    }
+
+        //    // Step 2: Copy the second half of the IFFT result into the overlap buffer for the next block
+        //    for (int i = 0; i < overlapSize; ++i)
+        //    {
+        //        overlapBuffer.setSample(0, i, outputDataL.getSample(0, overlapSize + i));
+        //    }
+        //}
     }
 }
 
