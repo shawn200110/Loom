@@ -384,6 +384,7 @@ bool Fourier4AudioProcessor::hasEditor() const
 juce::AudioProcessorEditor* Fourier4AudioProcessor::createEditor()
 {
     return new Fourier4AudioProcessorEditor(*this);
+
 }
 
 //==============================================================================

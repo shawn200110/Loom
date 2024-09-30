@@ -106,11 +106,11 @@ void LoomAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 
     fftProcessor.prepare(sampleRate, samplesPerBlock);
 
-    int fftBlockSize = 4096;
+    int fftBlockSize = 512;
     leftChannelFifo.prepare(fftBlockSize);
     rightChannelFifo.prepare(fftBlockSize);
-    leftAuxChannelFifo.prepare(fftBlockSize);
-    rightAuxChannelFifo.prepare(fftBlockSize);
+    /*leftAuxChannelFifo.prepare(fftBlockSize);
+    rightAuxChannelFifo.prepare(fftBlockSize);*/
 
     overlapBuffer.setSize(1, overlapSize);  // 1 channel, overlapSize samples
     overlapBuffer.clear();
@@ -163,26 +163,32 @@ void LoomAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear(i, 0, buffer.getNumSamples());
 
+    //DBG("buffersize: " << buffer.getNumSamples());
+
     juce::dsp::AudioBlock<float> block(buffer);
+
+    generateSineWave(buffer, 440.0f, 1.0f, getSampleRate());
 
     leftChannelFifo.update(buffer);
     rightChannelFifo.update(buffer);
-    leftAuxChannelFifo.update(buffer);
-    rightAuxChannelFifo.update(buffer);
+    //leftAuxChannelFifo.update(buffer);
+    //rightAuxChannelFifo.update(buffer);
     
 
-    if (overlapBuffer.getNumSamples() != overlapSize)
-    {
-        overlapBuffer.setSize(1, overlapSize);  // Initialize with overlap size
-        overlapBuffer.clear();
-    }
+    //if (overlapBuffer.getNumSamples() != overlapSize)
+    //{
+    //    overlapBuffer.setSize(1, overlapSize);  // Initialize with overlap size
+    //    overlapBuffer.clear();
+    //}
 
 
     // Check if all FIFOs have a complete block ready for FFT processing
+    //if (leftChannelFifo.getNumCompleteBuffersAvailable() > 0 &&
+    //    rightChannelFifo.getNumCompleteBuffersAvailable() > 0 &&
+    //    leftAuxChannelFifo.getNumCompleteBuffersAvailable() > 0 &&
+    //    rightAuxChannelFifo.getNumCompleteBuffersAvailable() > 0)
     if (leftChannelFifo.getNumCompleteBuffersAvailable() > 0 &&
-        rightChannelFifo.getNumCompleteBuffersAvailable() > 0 &&
-        leftAuxChannelFifo.getNumCompleteBuffersAvailable() > 0 &&
-        rightAuxChannelFifo.getNumCompleteBuffersAvailable() > 0)
+        rightChannelFifo.getNumCompleteBuffersAvailable() > 0)
     {
         // Create buffers to hold the FFT input
         juce::AudioBuffer<float> leftFftInput, rightFftInput, leftAuxFftInput, rightAuxFftInput;
@@ -190,28 +196,30 @@ void LoomAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
         // Pull the complete buffer from each FIFO
         leftChannelFifo.getAudioBuffer(leftFftInput);
         rightChannelFifo.getAudioBuffer(rightFftInput);
-        leftAuxChannelFifo.getAudioBuffer(leftAuxFftInput);
-        rightAuxChannelFifo.getAudioBuffer(rightAuxFftInput);
+        /*leftAuxChannelFifo.getAudioBuffer(leftAuxFftInput);
+        rightAuxChannelFifo.getAudioBuffer(rightAuxFftInput);*/
 
-        auto* LPtr = leftFftInput.getReadPointer(0);
-        auto* LAPtr = leftAuxFftInput.getReadPointer(0);
+        //auto* LPtr = leftFftInput.getReadPointer(0);
+        //auto* LAPtr = leftAuxFftInput.getReadPointer(0);
 
-        for (int i = 0; i < 10; ++i)
-        {
-           DBG("LPtr " << i << ": " << LPtr[i]);
-           DBG("LAPtr " << i << ": " << LAPtr[i]);
-         };
+        //for (int i = 0; i < 10; ++i)
+        //{
+        //   DBG("LPtr " << i << ": " << LPtr[i]);
+        //   //DBG("LAPtr " << i << ": " << LAPtr[i]);
+        // };
 
-        fftProcessor.processFFT(leftFftInput.getWritePointer(0));
+        //fftProcessor.processFFT(leftFftInput,0);
+        fftProcessor.processFFT(leftFftInput, 0);
         float* magL = fftProcessor.getMagnitude();
         float* phaseL = fftProcessor.getPhase();
 
-        /*for (int i = 0; i < 10; ++i)
+        for (int i = 0; i < 100; ++i)
         {
            DBG("magL " << i << ": " << magL[i]);
-        };*/
+        }; 
 
-        fftProcessor.processFFT(rightFftInput.getWritePointer(0));
+        //fftProcessor.processFFT(rightFftInput,1);
+        fftProcessor.processFFT(rightFftInput, 1);
         float* magR = fftProcessor.getMagnitude();
         float* phaseR = fftProcessor.getPhase();
 
@@ -220,139 +228,81 @@ void LoomAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
             DBG("magR " << i << ": " << magR[i]);
         };*/
 
-        fftProcessor.processFFT(leftAuxFftInput.getWritePointer(0));
-        float* magLA = fftProcessor.getMagnitude();
-        float* phaseLA = fftProcessor.getPhase();
 
-        for (int i = 0; i < 10; ++i)
+        //fftProcessor.processFFT(leftAuxFftInput,2);
+        //fftProcessor.processFFT(buffer, 2);
+        //float* magLA = fftProcessor.getMagnitude();
+        //float* phaseLA = fftProcessor.getPhase();
+
+        //for (int i = 0; i < 10; ++i)
+        //{
+        //    DBG("magLA " << i << ": " << magLA[i]);
+        //};
+
+        //fftProcessor.processFFT(rightAuxFftInput,3);
+        //fftProcessor.processFFT(buffer, 3);
+        //float* magRA = fftProcessor.getMagnitude();
+        //float* phaseRA = fftProcessor.getPhase();
+
+
+
+
+
+
+
+        // Morph
+
+        // Formant Shift
+
+
+        // Inverse FFT
+        fftProcessor.processIFFT(magL, phaseL, 0);
+        float* outL = fftProcessor.getOutputData(0);
+
+        /*for (int i = 0; i < 100; ++i)
         {
-            DBG("magLA " << i << ": " << magLA[i]);
-        };
+            DBG("outL " << i << ": " << outL[i]);
+        };*/
 
-        fftProcessor.processFFT(rightAuxFftInput.getWritePointer(0));
-        float* magRA = fftProcessor.getMagnitude();
-        float* phaseRA = fftProcessor.getPhase();
+        fftProcessor.processIFFT(magR, phaseR, 1);
+        float* outR = fftProcessor.getOutputData(1);
+        //fftProcessor.processIFFT(magLA, phaseLA, 2);
+        //float* outLA = fftProcessor.getOutputData(2);
+        //fftProcessor.processIFFT(magRA, phaseRA,3);
+        //float* outRA = fftProcessor.getOutputData(3);
 
-        for (int i = 0; i < 10; ++i)
+        
+        //for (int i = 0; i < 10; ++i)
+        //{
+        //    DBG("outRA " << i << ": " << outRA[i]);
+        //};
+
+        // Get write pointer to the right channel (channel 1)
+        float* leftChannelData = buffer.getWritePointer(0);
+        float* rightChannelData = buffer.getWritePointer(1);
+
+        //// Copy the float array to the right channel (could use different data if needed)
+        const float* channelData = buffer.getWritePointer(0);
+
+        for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
         {
-            DBG("magRA " << i << ": " << magRA[i]);
-        };
+            leftChannelData[sample] = outL[sample];
+            rightChannelData[sample] = outR[sample];
+        }
 
-           // for (int i = 0; i < fftSize; ++i)
-           //{
-           //    if (i < 20)  // Again, limit to the first 10 values for easier viewing
-           //    DBG("magL " << i << ": " << magL[i]);
-           //    DBG("magR " << i << ": " << magR[i]);
-           //    DBG("magLA " << i << ": " << magLA[i]);
-           //    DBG("magRA " << i << ": " << magRA[i]);
-           //};
+        for (int sample = 0; sample < 100; ++sample)
+        {
+            //leftChannelData[sample] = outL[sample];
+            DBG("ChannelData " << sample << ": " << channelData[sample]);
+            DBG("NumSamplesInBuffer" << buffer.getNumSamples());
+            DBG("outR: " << outR[sample]);
+            DBG("outL: " << outR[sample]);
+            //rightChannelData[sample] = outR[sample];  // Output myFloatArray to the right channel
 
-        //    juce::dsp::AudioBlock<float> leftBlock(leftFftInput);
-        //    juce::dsp::AudioBlock<float> rightBlock(rightFftInput);
-        //    juce::dsp::AudioBlock<float> leftAuxBlock(leftAuxFftInput);
-        //    juce::dsp::AudioBlock<float> rightAuxBlock(rightAuxFftInput);
-
-        //    juce::dsp::ProcessContextReplacing<float> leftContext(leftBlock);
-        //    juce::dsp::ProcessContextReplacing<float> rightContext(rightBlock);
-        //    juce::dsp::ProcessContextReplacing<float> leftAuxContext(leftAuxBlock);
-        //    juce::dsp::ProcessContextReplacing<float> rightAuxContext(rightAuxBlock);
-
-        //    // Perform FFT on each of the accumulated blocks
-        //    // get fft of all i/p channels
-        //    fftProcessor.processFFT(leftContext);
-        //    juce::AudioBuffer<float>& frequencyDataL = fftProcessor.getFrequencyData();
-        //    fftProcessor.processFFT(rightContext);
-        //    juce::AudioBuffer<float>& frequencyDataR = fftProcessor.getFrequencyData();
-        //    fftProcessor.processFFT(leftAuxContext);
-        //    juce::AudioBuffer<float>& frequencyDataLA = fftProcessor.getFrequencyData();
-        //    fftProcessor.processFFT(rightAuxContext);
-        //    juce::AudioBuffer<float>& frequencyDataRA = fftProcessor.getFrequencyData();
+        }
+          
 
 
-        //    for (int i = 0; i < fftSize; ++i)
-        //    {
-        //        if (i < 20)  // Again, limit to the first 10 values for easier viewing
-        //        DBG("freqDataL " << i << ": " << frequencyDataL.getSample(0, i));
-        //        DBG("freqDataLA " << i << ": " << frequencyDataLA.getSample(0, i));
-        //    };
-
-        //    //// Assuming you have two frequency buffers from the FFT of two signals
-        //    //juce::dsp::AudioBlock<float> frequencyBlockL(frequencyDataL);
-        //    //juce::dsp::AudioBlock<float> frequencyBlockLA(frequencyDataLA);
-        //    //juce::dsp::AudioBlock<float> frequencyBlockR(frequencyDataR);
-        //    //juce::dsp::AudioBlock<float> frequencyBlockRA(frequencyDataRA);
-
-        //    ////// Create contexts for both
-        //    //juce::dsp::ProcessContextReplacing<float> frequencyContextL(frequencyBlockL);
-        //    //juce::dsp::ProcessContextReplacing<float> frequencyContextLA(frequencyBlockLA);
-        //    //juce::dsp::ProcessContextReplacing<float> frequencyContextR(frequencyBlockR);
-        //    //juce::dsp::ProcessContextReplacing<float> frequencyContextRA(frequencyBlockRA);
-
-        //    //morphProcessor.process(frequencyContextL, frequencyContextLA);
-        //    //juce::AudioBuffer<float>& morphedFFTL = morphProcessor.getMorphedFFT();
-        //    //morphProcessor.process(frequencyContextR, frequencyContextRA);
-        //    //juce::AudioBuffer<float>& morphedFFTR = morphProcessor.getMorphedFFT();
-
-
-        //    // Experimental ////////////////////////////////////////////
-        //    //juce::dsp::AudioBlock<float> frequencyBlockLA(frequencyDataLA);
-        //    //juce::dsp::AudioBlock<float> frequencyBlockRA(frequencyDataRA);
-
-        //    //juce::dsp::ProcessContextReplacing<float> frequencyContextLA(frequencyBlockLA);
-        //    //juce::dsp::ProcessContextReplacing<float> frequencyContextRA(frequencyBlockRA);
-
-        //    //fftProcessor.processIFFT(frequencyContextLA);
-        //    //juce::AudioBuffer<float>& outputDataL = fftProcessor.getTimeData();
-        //    //fftProcessor.processIFFT(frequencyContextRA);
-        //    //juce::AudioBuffer<float>& outputDataR = fftProcessor.getTimeData();
-
-        //    ///////////////////////////////////////////////////////////
-
-
-        //    //juce::dsp::AudioBlock<float> morphedBlockL(morphedFFTL);
-        //    //juce::dsp::AudioBlock<float> morphedBlockR(morphedFFTR);
-
-        //    //juce::dsp::ProcessContextReplacing<float> morphedContextL(morphedBlockL);
-        //    //juce::dsp::ProcessContextReplacing<float> morphedContextR(morphedBlockR);
-
-        //    //// Perform IFFT to convert frequency data back to time domain for each channel
-        //    //fftProcessor.processIFFT(morphedContextL);
-        //    //juce::AudioBuffer<float>& outputDataL = fftProcessor.getTimeData();
-        //    //fftProcessor.processIFFT(morphedContextR);
-        //    //juce::AudioBuffer<float>& outputDataR = fftProcessor.getTimeData();
-
-        //    //// Determine the number of samples to copy based on the smaller buffer size
-        //    //int numSamplesToCopy = juce::jmin(buffer.getNumSamples(), outputDataL.getNumSamples());
-
-        //    //// Write the processed data back to the output buffer (only copy the number of samples that fit)
-        //    //buffer.copyFrom(0, 0, outputDataL, 0, 0, numSamplesToCopy);
-        //    //buffer.copyFrom(1, 0, outputDataR, 0, 0, numSamplesToCopy);
-
-        //    // Step 1: Add the first half of the IFFT result to the overlap from the previous block
-        //    for (int i = 0; i < overlapSize; ++i)
-        //    {
-        //        // Add the saved overlap to the first half of the new block
-        //        float currentSampleL = buffer.getSample(0, i) + overlapBuffer.getSample(0, i);
-        //        float currentSampleR = buffer.getSample(1, i) + overlapBuffer.getSample(0, i);
-
-        //        // Set the final value back to the buffer
-        //        buffer.setSample(0, i, currentSampleL);
-
-        //        DBG("Time Data:");
-        //        for (int i = 0; i < fftSize; ++i)
-        //        {
-        //            if (i < 10)  // Again, limit to the first 10 values for easier viewing
-        //                DBG("Time Data" << i << ": " << currentSampleL);
-        //        };
-        //        //buffer.setSample(1, i, currentSampleR);
-        //    }
-
-        //    // Step 2: Copy the second half of the IFFT result into the overlap buffer for the next block
-        //    for (int i = 0; i < overlapSize; ++i)
-        //    {
-        //        overlapBuffer.setSample(0, i, outputDataL.getSample(0, overlapSize + i));
-        //    }
-        //}
     }
 }
 
@@ -403,4 +353,25 @@ LoomAudioProcessor::createParameterLayout()
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new LoomAudioProcessor();
+}
+
+void LoomAudioProcessor::generateSineWave(juce::AudioBuffer<float>& buffer, float frequency, float amplitude, double sampleRate)
+{
+    int numSamples = buffer.getNumSamples();
+    int numChannels = buffer.getNumChannels();
+
+    // Fill the buffer with a sine wave on all channels
+    for (int channel = 0; channel < numChannels; ++channel)
+    {
+        float* channelData = buffer.getWritePointer(channel);
+
+        for (int sample = 0; sample < numSamples; ++sample)
+        {
+            // Calculate the time `t` in seconds for the current sample
+            float t = static_cast<float>(sample) / sampleRate;
+
+            // Generate the sine wave for this sample
+            channelData[sample] = amplitude * std::sin(2.0f * juce::MathConstants<float>::pi * frequency * t);
+        }
+    }
 }

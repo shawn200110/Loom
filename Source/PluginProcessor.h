@@ -104,11 +104,6 @@ struct SingleChannelSampleFifo
         jassert(buffer.getNumChannels() > channelToUse);
         auto* channelPtr = buffer.getReadPointer(channelToUse);
 
-        for (int i = 0; i < 10; ++i)
-        {
-            DBG("channelPtr " << i << ": " << channelPtr[i]);
-        };
-
         for (int i = 0; i < buffer.getNumSamples(); ++i)
         {
             pushNextSampleIntoFifo(channelPtr[i]);
@@ -259,6 +254,8 @@ private:
     int overlapSize = fftSize / 2;  // 50% overlap
 
     juce::AudioBuffer<float> overlapBuffer;
+
+    void generateSineWave(juce::AudioBuffer<float>& buffer, float frequency, float amplitude, double sampleRate);
 
 
         
