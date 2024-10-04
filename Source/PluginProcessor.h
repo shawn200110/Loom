@@ -206,6 +206,8 @@ public:
 
     SingleChannelSampleFifo<BlockType> leftAuxChannelFifo{ Channel::LeftAux };
     SingleChannelSampleFifo<BlockType> rightAuxChannelFifo{ Channel::RightAux };
+
+    void outputToCSV(float* data, int numSamples, const std::string& fileName);
 private:
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (LoomAudioProcessor)
@@ -251,11 +253,11 @@ private:
     FormantShiftProcessor formantProcessor;
 
     int fftSize = 1024;  // FFT block size
-    int overlapSize = fftSize / 2;  // 50% overlap
 
     juce::AudioBuffer<float> overlapBuffer;
 
     void generateSineWave(juce::AudioBuffer<float>& buffer, float frequency, float amplitude, double sampleRate);
+    
 
 
         

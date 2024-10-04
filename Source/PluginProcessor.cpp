@@ -8,6 +8,7 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include <fstream>  
 
 //==============================================================================
 LoomAudioProcessor::LoomAudioProcessor()
@@ -111,9 +112,6 @@ void LoomAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     rightChannelFifo.prepare(fftBlockSize);
     /*leftAuxChannelFifo.prepare(fftBlockSize);
     rightAuxChannelFifo.prepare(fftBlockSize);*/
-
-    overlapBuffer.setSize(1, overlapSize);  // 1 channel, overlapSize samples
-    overlapBuffer.clear();
 }
 
 void LoomAudioProcessor::releaseResources()
@@ -163,23 +161,15 @@ void LoomAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear(i, 0, buffer.getNumSamples());
 
-    //DBG("buffersize: " << buffer.getNumSamples());
-
     juce::dsp::AudioBlock<float> block(buffer);
 
     generateSineWave(buffer, 440.0f, 1.0f, getSampleRate());
-
+    outputToCSV(buffer.getWritePointer(0),buffer.getNumSamples(), "C:/Users/Shawn Cawley/Documents/CodeResources/Loom/inputExample.csv");
     leftChannelFifo.update(buffer);
     rightChannelFifo.update(buffer);
     //leftAuxChannelFifo.update(buffer);
     //rightAuxChannelFifo.update(buffer);
-    
-
-    //if (overlapBuffer.getNumSamples() != overlapSize)
-    //{
-    //    overlapBuffer.setSize(1, overlapSize);  // Initialize with overlap size
-    //    overlapBuffer.clear();
-    //}
+ 
 
 
     // Check if all FIFOs have a complete block ready for FFT processing
@@ -209,24 +199,23 @@ void LoomAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
         // };
 
         //fftProcessor.processFFT(leftFftInput,0);
-        fftProcessor.processFFT(leftFftInput, 0);
+        fftProcessor.processFFT(buffer, 0);
         float* magL = fftProcessor.getMagnitude();
         float* phaseL = fftProcessor.getPhase();
 
-        for (int i = 0; i < 100; ++i)
-        {
-           DBG("magL " << i << ": " << magL[i]);
-        }; 
+        float* segL = fftProcessor.getSegmeneted();
+        outputToCSV(segL, 512, "C:/Users/Shawn Cawley/Documents/CodeResources/Loom/segExample.csv");
+
 
         //fftProcessor.processFFT(rightFftInput,1);
-        fftProcessor.processFFT(rightFftInput, 1);
+        fftProcessor.processFFT(buffer, 1);
         float* magR = fftProcessor.getMagnitude();
         float* phaseR = fftProcessor.getPhase();
+        
 
-        /*for (int i = 0; i < 10; ++i)
-        {
-            DBG("magR " << i << ": " << magR[i]);
-        };*/
+        outputToCSV(magL, leftFftInput.getNumSamples(), "C:/Users/Shawn Cawley/Documents/CodeResources/Loom/magExample.csv");
+        //outputToCSV(phaseL, leftFftInput.getNumSamples(), "C:/Users/Shawn Cawley/Documents/CodeResources/Loom/imagExample.csv");
+
 
 
         //fftProcessor.processFFT(leftAuxFftInput,2);
@@ -281,25 +270,26 @@ void LoomAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
         float* leftChannelData = buffer.getWritePointer(0);
         float* rightChannelData = buffer.getWritePointer(1);
 
-        //// Copy the float array to the right channel (could use different data if needed)
-        const float* channelData = buffer.getWritePointer(0);
 
         for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
         {
             leftChannelData[sample] = outL[sample];
             rightChannelData[sample] = outR[sample];
-        }
-
-        for (int sample = 0; sample < 100; ++sample)
-        {
-            //leftChannelData[sample] = outL[sample];
-            DBG("ChannelData " << sample << ": " << channelData[sample]);
-            DBG("NumSamplesInBuffer" << buffer.getNumSamples());
-            DBG("outR: " << outR[sample]);
-            DBG("outL: " << outR[sample]);
-            //rightChannelData[sample] = outR[sample];  // Output myFloatArray to the right channel
 
         }
+
+        outputToCSV(leftChannelData, buffer.getNumSamples(),"C:/Users/Shawn Cawley/Documents/CodeResources/Loom/outputExample.csv");
+
+        //for (int sample = 300; sample < 500; ++sample)
+        //{
+        //    //leftChannelData[sample] = outL[sample];
+        //    DBG("ChannelData " << sample << ": " << channelData[sample]);
+        //    DBG("NumSamplesInBuffer" << buffer.getNumSamples());
+        //    DBG("outR: " << outR[sample]);
+        //    DBG("outL: " << outR[sample]);
+        //    //rightChannelData[sample] = outR[sample];  // Output myFloatArray to the right channel
+
+        //}
           
 
 
@@ -374,4 +364,26 @@ void LoomAudioProcessor::generateSineWave(juce::AudioBuffer<float>& buffer, floa
             channelData[sample] = amplitude * std::sin(2.0f * juce::MathConstants<float>::pi * frequency * t);
         }
     }
+}
+
+void LoomAudioProcessor::outputToCSV(float* data, int numSamples, const std::string& fileName)
+{
+    // Open a file in write mode
+    std::ofstream file(fileName);
+
+    if (!file.is_open()) {
+        std::cerr << "Error opening file!" << std::endl;
+        return;
+    }
+
+    // Write data to the CSV file
+    for (size_t i = 0; i < numSamples; ++i) {
+        file << data[i];
+        if (i < numSamples - 1) {
+            file << ",";  // Separate values by commas
+        }
+    }
+
+    // Close the file
+    file.close();
 }

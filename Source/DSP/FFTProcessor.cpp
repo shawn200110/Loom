@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <iterator>
 
-//FFTProcessor::FFTProcessor() : fft(8), fourierf(8), fourieri(8), window(256, juce::dsp::WindowingFunction<float>::blackmanHarris) // fftSize = 2^fftOrder
 
 
 
@@ -110,7 +109,7 @@ void FFTProcessor::storeFrequencyData(const juce::AudioBuffer<float>& fftData)
 
 void FFTProcessor::applyFFT(juce::AudioBuffer<float> bufferinput, int channel) {
 
-    auto* channelData = bufferinput.getWritePointer(0);
+    auto* channelData = bufferinput.getWritePointer(channel);
 
     for (int x = 0; x < bufferinput.getNumSamples(); x++) {
         float f = channelData[x];
@@ -124,30 +123,39 @@ void FFTProcessor::applyFFT(juce::AudioBuffer<float> bufferinput, int channel) {
         channelData[x] = bufout[writehead];
         btp[playhead] = f;
 
+        
+        updateWindowLoc(channel);
         updateWritehead(channel, 0);
         updatePlayhead(channel, 0);
-        updateWindowLoc(channel);
-        writehead = selectWritehead(channel);
         playhead = selectPlayhead(channel);
+        writehead = selectWritehead(channel);
         windowLoc = selectWindowLoc(channel);
 
         if (windowLoc == fftsize / 4) {
 
-            
             windowLoc = 0;
             int counter = 0;
             for (int i = playhead; i < fftsize; i++) {
                 segmented[counter] = btp[i];
                 counter++;
+                
             }
 
 
             for (int i = 0; i < playhead; i++) {
                 segmented[counter] = btp[i];
                 counter++;
+                
             }
 
-            window.multiplyWithWindowingTable(segmented, fftsize);
+            // Here, apply zero-padding if there are fewer samples than fftsize
+            if (counter < fftsize) {
+                for (int i = counter; i < fftsize; i++) {
+                    segmented[i] = 0.0f;  // Zero-pad the rest of the buffer
+                }
+            }
+
+            //window.multiplyWithWindowingTable(segmented, fftsize);
             fourierf.performRealOnlyForwardTransform(segmented);
             for (int i = 0; i < fftsize; i++) {
                 std::complex<float> temp;
@@ -157,6 +165,7 @@ void FFTProcessor::applyFFT(juce::AudioBuffer<float> bufferinput, int channel) {
                 mag[i] = std::abs(temp);
                 phase[i] = std::arg(temp);
             }
+
         }
     }
 }
@@ -171,37 +180,26 @@ void FFTProcessor::applyInverseFFT(float* m, float* p, int channel)
     float* bufout = selectBufOut(channel);
     float* btp = selectBTP(channel);
 
+
     if (windowLoc == fftsize / 4) {
         for (int i = 0; i < fftsize; i++) {
             float real = std::cos(p[i]) * m[i];
             float imag = std::sin(p[i]) * m[i];
-
-
-            if (i < 25) {
-                DBG("segBefore " << i << ": " << segmented[i]);
-                DBG("m " << i << ": " << m[i]);
-                DBG("p " << i << ": " << p[i]);
-                DBG("real " << i << ": " << real);
-                DBG("imag " << i << ": " << imag);
-            }
 
             segmented[i * 2] = real;
             segmented[i * 2 + 1] = imag;
 
 
         }
-
-        for (int i = 0; i < 25; i++) {
-            
-            DBG("segmented " << i << ": " << segmented[i]);
-        }
+ 
 
         fourieri.performRealOnlyInverseTransform(segmented);
-        window.multiplyWithWindowingTable(segmented, fftsize);
+        //window.multiplyWithWindowingTable(segmented, fftsize);
+        
+        //normalizeArray(segmented, fftsize);
+
 
         
-
-
         for (int i = 0; i < fftsize; i++) {
             if (i < (fftsize / 4) * 3) { // 75% overlap
                 bufout[(writehead + i) % fftsize] += segmented[i] * (2.f / 3.f);
@@ -216,10 +214,12 @@ void FFTProcessor::applyInverseFFT(float* m, float* p, int channel)
         for (int i = 0; i < 200; i++) {
             DBG("bufout " << i << ": " << bufout[i]);
         }
+
+        updatePlayhead(channel, 1);
+        updateWritehead(channel, 1);
     }
 
-    updatePlayhead(channel, 1);
-    updateWritehead(channel, 1);
+    
 
 }
 
@@ -246,56 +246,27 @@ float* FFTProcessor::selectBTP(int channel)
 
 void FFTProcessor::updatePlayhead(int channel, int after)
 {
+    const int overlapStep = fftsize / 4;  // 75% overlap (move by 128 samples for a 512-point FFT)
+
     if (after == 0)
     {
+        //if (channel == 0) playheadL += overlapStep;
+        //if (channel == 1) playheadR += overlapStep;
+        //if (channel == 2) playheadLA += overlapStep;
+        //if (channel == 3) playheadRA += overlapStep;
         if (channel == 0) playheadL++;
-
-        if (channel == 1)  playheadR++;
-
+        if (channel == 1) playheadR++;
         if (channel == 2) playheadLA++;
-
         if (channel == 3) playheadRA++;
     }
 
-
-    if (after == 1) {
-
-        if (channel == 0)
-        {
-            
-            if (playheadL == fftsize) {
-                playheadL = 0;
-
-            }
-        }
-
-        if (channel == 1)
-        {
-            
-            if (playheadR == fftsize) {
-                playheadR = 0;
-
-            }
-        }
-
-        if (channel == 2)
-        {
-            
-            if (playheadLA == fftsize) {
-                playheadLA = 0;
-
-            }
-        }
-
-        if (channel == 3)
-        {
-            
-            if (playheadRA == fftsize) {
-                playheadRA = 0;
-
-            }
-        }
-
+    if (after == 1)
+    {
+        // Reset the playhead if it exceeds the fftsize
+        if (channel == 0 && playheadL >= fftsize) playheadL = 0;
+        if (channel == 1 && playheadR >= fftsize) playheadR = 0;
+        if (channel == 2 && playheadLA >= fftsize) playheadLA = 0;
+        if (channel == 3 && playheadRA >= fftsize) playheadRA = 0;
     }
 }
 
@@ -308,84 +279,34 @@ int FFTProcessor::selectPlayhead(int channel)
     if (channel == 3) return playheadRA;
 }
 
+
 void FFTProcessor::updateWritehead(int channel, int after)
 {
+    const int blockSize = fftsize;  // Writehead moves by the full block size
+
     if (after == 0) {
-        if (channel == 0)
-        {
-            writeheadL++;
-        }
-
-        if (channel == 1)
-        {
-            writeheadR++;
-        }
-
-        if (channel == 2)
-        {
-            writeheadLA++;
-        }
-
-        if (channel == 3)
-        {
-            writeheadRA++;
-        }
+        if (channel == 0) writeheadL++;
+        if (channel == 1) writeheadR++;
+        if (channel == 2) writeheadLA++;
+        if (channel == 3) writeheadRA++;
     }
 
-    if (after == 1) {
-
-        if (channel == 0)
-        {
-            if (writeheadL == fftsize) {
-                writeheadL = 0;
-            }
-        }
-
-        if (channel == 1)
-        {
-            if (writeheadR == fftsize) {
-                writeheadR = 0;
-            }
-        }
-
-        if (channel == 2)
-        {
-            if (writeheadLA == fftsize) {
-                writeheadLA = 0;
-            }
-        }
-
-        if (channel == 3)
-        {
-            if (writeheadRA == fftsize) {
-                writeheadRA = 0;
-            }
-        }
-        
+    if (after == 1)
+    {
+        // Reset the writehead if it exceeds the fftsize
+        if (channel == 0 && writeheadL >= fftsize) writeheadL = 0;
+        if (channel == 1 && writeheadR >= fftsize) writeheadR = 0;
+        if (channel == 2 && writeheadLA >= fftsize) writeheadLA = 0;
+        if (channel == 3 && writeheadRA >= fftsize) writeheadRA = 0;
     }
 }
 
 int FFTProcessor::selectWritehead(int channel)
 {
-    if (channel == 0)
-    {
-        return writeheadL;
-    }
-
-    if (channel == 1)
-    {
-        return writeheadR;
-    }
-
-    if (channel == 2)
-    {
-        return writeheadLA;
-    }
-
-    if (channel == 3)
-    {
-        return writeheadRA;
-    }
+    if (channel == 0) return writeheadL;
+    if (channel == 1) return writeheadR;
+    if (channel == 2) return writeheadLA;
+    if (channel == 3) return writeheadRA;
 }
 
 void FFTProcessor::updateWindowLoc(int channel)
@@ -460,23 +381,33 @@ int FFTProcessor::selectWindowLoc(int channel)
 }
 
 float* FFTProcessor::getOutputData(int channel) {
-    if (channel == 0)
+    if (channel == 0) return leftbufout;
+    if (channel == 1) return rightbufout;
+    if (channel == 2) return leftauxbufout;
+    if (channel == 3) return rightauxbufout;
+}
+
+void FFTProcessor::normalizeArray(float* array, int size)
+{
+    // Step 1: Find the maximum absolute value in the array
+    float maxVal = 0.0f;
+    for (int i = 0; i < size; ++i)
     {
-        return leftbufout;
+        if (std::abs(array[i]) > maxVal)
+        {
+            maxVal = std::abs(array[i]);
+        }
     }
 
-    if (channel == 1)
+    // Step 2: If maxVal is 0, the array is already normalized (all elements are 0)
+    if (maxVal == 0.0f)
     {
-        return rightbufout;
+        return; // Avoid division by zero
     }
 
-    if (channel == 2)
+    // Step 3: Scale all elements of the array by the maximum value
+    for (int i = 0; i < size; ++i)
     {
-        return leftauxbufout;
-    }
-
-    if (channel == 3)
-    {
-        return rightauxbufout;
+        array[i] /= maxVal; // Scale to range -1 to 1
     }
 }

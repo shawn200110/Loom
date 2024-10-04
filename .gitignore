@@ -262,3 +262,15 @@ Builds/VisualStudio2022/x64/Release/Standalone Plugin/Loom.pdb
 Builds/VisualStudio2022/x64/Release/Standalone Plugin/Loom_StandalonePlugin.log
 Builds/VisualStudio2022/x64/Release/Standalone Plugin/Loom_StandalonePlugin.vcxproj.FileListAbsolute.txt
 Builds/VisualStudio2022/x64/Release/Standalone Plugin/resources.res
+segExample.csv
+realExample.csv
+outputExample.csv
+magExample.csv
+LoomFilterGraph.filtergraph
+inputExample.csv
+imagExample.csv
+csvPlotter.py
+Builds/VisualStudio2022/outputExample.csv
+Builds/VisualStudio2022/.vs/Loom/v17/ipch/AutoPCH/d2d7b0d8bab8e4d1/INCLUDE_JUCE_CORE.ipch
+Builds/VisualStudio2022/.vs/Loom/v17/ipch/AutoPCH/c783042db511dddd/DELETE_SCALAR.ipch
+Builds/VisualStudio2022/.vs/Loom/v17/ipch/AutoPCH/71c8a432fac92c2d/INCLUDE_JUCE_GUI_BASICS.ipch

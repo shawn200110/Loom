@@ -4,7 +4,7 @@ class FFTProcessor
 {
 public:
     // Default constructor
-    FFTProcessor() : fourierf(log2(fftsize)), fourieri(log2(fftsize)), window(fftsize, juce::dsp::WindowingFunction<float>::hann, false, 0.0f)
+    FFTProcessor() : fourierf(log2(fftsize)), fourieri(log2(fftsize)), window(fftsize - 1, juce::dsp::WindowingFunction<float>::hann, false, 0.0f)
     {
 
         std::fill(segmented, segmented + (fftsize * 2), 0.0f);
@@ -14,6 +14,8 @@ public:
         std::fill(rightauxbuf, rightauxbuf + (fftsize), 0.0f);
         std::fill(leftbufout, leftbufout + (fftsize), 0.0f);
         std::fill(rightbufout, rightbufout + (fftsize), 0.0f);
+        std::fill(mag, mag + (fftsize), 0.0f);
+        std::fill(phase, phase + (fftsize), 0.0f);
     };
 
 
@@ -34,6 +36,8 @@ public:
 
     float* getMagnitude() { return mag; }
     float* getPhase() { return phase; }
+    float* getSegmeneted() { return segmented; }
+    void normalizeArray(float* array, int size);
 
     
     
