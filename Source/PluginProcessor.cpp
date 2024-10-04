@@ -177,9 +177,9 @@ void LoomAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
     //    rightChannelFifo.getNumCompleteBuffersAvailable() > 0 &&
     //    leftAuxChannelFifo.getNumCompleteBuffersAvailable() > 0 &&
     //    rightAuxChannelFifo.getNumCompleteBuffersAvailable() > 0)
-    if (leftChannelFifo.getNumCompleteBuffersAvailable() > 0 &&
-        rightChannelFifo.getNumCompleteBuffersAvailable() > 0)
-    {
+    //if (leftChannelFifo.getNumCompleteBuffersAvailable() > 0 &&
+    //    rightChannelFifo.getNumCompleteBuffersAvailable() > 0)
+    //{
         // Create buffers to hold the FFT input
         juce::AudioBuffer<float> leftFftInput, rightFftInput, leftAuxFftInput, rightAuxFftInput;
 
@@ -293,7 +293,7 @@ void LoomAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
           
 
 
-    }
+    //}
 }
 
 //==============================================================================

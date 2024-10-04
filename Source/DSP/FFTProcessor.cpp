@@ -58,24 +58,6 @@ void FFTProcessor::processIFFT(float* m, float* p, int channel)
     //applyInverseFFT(block, fftData);
 }
 
-void FFTProcessor::storeFrequencyData(const juce::AudioBuffer<float>& fftData)
-{
-    frequencyData.setSize(1, fftsize);
-    // Store magnitude of FFT data into frequencyData buffer (can be modified to store real/imaginary as needed)
-    for (int i = 0; i < fftsize / 2; ++i)
-    {
-        // For real FFT, even indices are real, odd indices are imaginary
-        float realPart = fftData.getSample(0, 2 * i);    // Real part
-        float imagPart = fftData.getSample(0, 2 * i + 1); // Imaginary part
-
-        // Store magnitude (or any other transformation you need)
-        float magnitude = std::sqrt(realPart * realPart + imagPart * imagPart) / fftsize;
-        frequencyData.setSample(0, i, magnitude);
-
-        DBG("freqData " << i << frequencyData.getSample(0, i));
-    }
-}
-
 
     // Function to apply FFT to a single channel (left or right)
 //void FFTProcessor::applyFFT(juce::dsp::AudioBlock<float>& audioBlock, juce::AudioBuffer<float>& fftData)
@@ -125,20 +107,23 @@ void FFTProcessor::applyFFT(juce::AudioBuffer<float> bufferinput, int channel) {
 
         
         updateWindowLoc(channel);
-        updateWritehead(channel, 0);
         updatePlayhead(channel, 0);
         playhead = selectPlayhead(channel);
-        writehead = selectWritehead(channel);
         windowLoc = selectWindowLoc(channel);
 
         if (windowLoc == fftsize / 4) {
-
             windowLoc = 0;
             int counter = 0;
-            for (int i = playhead; i < fftsize; i++) {
+            for (int i = playhead; i < bufferinput.getNumSamples(); i++) {
                 segmented[counter] = btp[i];
                 counter++;
                 
+            }
+
+            for (int i = bufferinput.getNumSamples(); i < fftsize; i++) {
+                segmented[counter] = 0;
+                counter++;
+
             }
 
 
@@ -146,13 +131,6 @@ void FFTProcessor::applyFFT(juce::AudioBuffer<float> bufferinput, int channel) {
                 segmented[counter] = btp[i];
                 counter++;
                 
-            }
-
-            // Here, apply zero-padding if there are fewer samples than fftsize
-            if (counter < fftsize) {
-                for (int i = counter; i < fftsize; i++) {
-                    segmented[i] = 0.0f;  // Zero-pad the rest of the buffer
-                }
             }
 
             //window.multiplyWithWindowingTable(segmented, fftsize);
@@ -165,7 +143,8 @@ void FFTProcessor::applyFFT(juce::AudioBuffer<float> bufferinput, int channel) {
                 mag[i] = std::abs(temp);
                 phase[i] = std::arg(temp);
             }
-
+            
+            updatePlayhead(channel, 1);
         }
     }
 }
@@ -181,7 +160,11 @@ void FFTProcessor::applyInverseFFT(float* m, float* p, int channel)
     float* btp = selectBTP(channel);
 
 
+    updateWritehead(channel, 0);
+    writehead = selectWritehead(channel);
+
     if (windowLoc == fftsize / 4) {
+        
         for (int i = 0; i < fftsize; i++) {
             float real = std::cos(p[i]) * m[i];
             float imag = std::sin(p[i]) * m[i];
@@ -215,7 +198,8 @@ void FFTProcessor::applyInverseFFT(float* m, float* p, int channel)
             DBG("bufout " << i << ": " << bufout[i]);
         }
 
-        updatePlayhead(channel, 1);
+        
+        
         updateWritehead(channel, 1);
     }
 
@@ -282,13 +266,17 @@ int FFTProcessor::selectPlayhead(int channel)
 
 void FFTProcessor::updateWritehead(int channel, int after)
 {
-    const int blockSize = fftsize;  // Writehead moves by the full block size
+    const int overlapStep = fftsize / 4;  // 75% overlap (move by 128 samples for a 512-point FFT)
 
     if (after == 0) {
         if (channel == 0) writeheadL++;
         if (channel == 1) writeheadR++;
         if (channel == 2) writeheadLA++;
         if (channel == 3) writeheadRA++;
+        //if (channel == 0) writeheadL+=overlapStep;
+        //if (channel == 1) writeheadR+= overlapStep;
+        //if (channel == 2) writeheadLA+= overlapStep;
+        //if (channel == 3) writeheadRA+= overlapStep;
     }
 
     if (after == 1)

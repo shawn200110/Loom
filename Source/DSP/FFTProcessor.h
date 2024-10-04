@@ -77,9 +77,4 @@ private:
     int selectWindowLoc(int channel);
     float* selectBTP(int channel);
     float* selectBufOut(int channel);
-
-    
-    
-
-    void storeFrequencyData(const juce::AudioBuffer<float>& fftData);
 };
