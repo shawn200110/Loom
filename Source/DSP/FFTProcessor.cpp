@@ -112,37 +112,14 @@ void FFTProcessor::applyFFT(juce::AudioBuffer<float> bufferinput, int channel) {
     auto* channelData = bufferinput.getWritePointer(channel);
 
     for (int x = 0; x < bufferinput.getNumSamples(); x++) {
-        float f = channelData[x];
 
-        int writehead = selectWritehead(channel);
-        int playhead = selectPlayhead(channel);
-        int windowLoc = selectWindowLoc(channel);
+        float f = channelData[x];
         float* bufout = selectBufOut(channel);
         float* btp = selectBTP(channel);
 
-        channelData[x] = bufout[writehead];
-        btp[playhead] = f;
-
-        
-        updateWindowLoc(channel);
-        updateWritehead(channel, 0);
-        updatePlayhead(channel, 0);
-        playhead = selectPlayhead(channel);
-        writehead = selectWritehead(channel);
-        windowLoc = selectWindowLoc(channel);
-
-        if (windowLoc == fftsize / 4) {
-
-            windowLoc = 0;
+        btp[x] = f;
             int counter = 0;
-            for (int i = playhead; i < fftsize; i++) {
-                segmented[counter] = btp[i];
-                counter++;
-                
-            }
-
-
-            for (int i = 0; i < playhead; i++) {
+            for (int i = 0; i < fftsize; i++) {
                 segmented[counter] = btp[i];
                 counter++;
                 
@@ -166,7 +143,6 @@ void FFTProcessor::applyFFT(juce::AudioBuffer<float> bufferinput, int channel) {
                 phase[i] = std::arg(temp);
             }
 
-        }
     }
 }
 
@@ -174,14 +150,9 @@ void FFTProcessor::applyFFT(juce::AudioBuffer<float> bufferinput, int channel) {
 void FFTProcessor::applyInverseFFT(float* m, float* p, int channel)
 {
 
-    int writehead = selectWritehead(channel);
-    int playhead = selectPlayhead(channel);
-    int windowLoc = selectWindowLoc(channel);
     float* bufout = selectBufOut(channel);
     float* btp = selectBTP(channel);
 
-
-    if (windowLoc == fftsize / 4) {
         for (int i = 0; i < fftsize; i++) {
             float real = std::cos(p[i]) * m[i];
             float imag = std::sin(p[i]) * m[i];
@@ -196,31 +167,11 @@ void FFTProcessor::applyInverseFFT(float* m, float* p, int channel)
         fourieri.performRealOnlyInverseTransform(segmented);
         //window.multiplyWithWindowingTable(segmented, fftsize);
         
-        //normalizeArray(segmented, fftsize);
 
 
-        
         for (int i = 0; i < fftsize; i++) {
-            if (i < (fftsize / 4) * 3) { // 75% overlap
-                bufout[(writehead + i) % fftsize] += segmented[i] * (2.f / 3.f);
-                //bufout[(writehead + i) % fftsize] += segmented[i];
-            }
-            else {
-                bufout[(writehead + i) % fftsize] = segmented[i] * (2.f / 3.f);
-                //bufout[(writehead + i) % fftsize] = segmented[i];
-            }
+                bufout[(i) % fftsize] = segmented[i];
         }
-
-        for (int i = 0; i < 200; i++) {
-            DBG("bufout " << i << ": " << bufout[i]);
-        }
-
-        updatePlayhead(channel, 1);
-        updateWritehead(channel, 1);
-    }
-
-    
-
 }
 
 float* FFTProcessor::selectBufOut(int channel)

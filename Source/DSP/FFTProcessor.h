@@ -44,9 +44,9 @@ public:
 
 private:
     double sampleRate = 44100.0;
-    int samplesPerBlock = 4096;
+    int samplesPerBlock = 512;
 
-    static constexpr int fftsize = 512;
+    static constexpr int fftsize = 4096;
     float leftbuf[fftsize], rightbuf[fftsize], leftauxbuf[fftsize], rightauxbuf[fftsize],leftbufout[fftsize], rightbufout[fftsize], leftauxbufout[fftsize], rightauxbufout[fftsize]; // circular buffers
     int playheadL=0, writeheadL=0, playheadR=0, writeheadR=0,
         playheadLA=0, writeheadLA=0, playheadRA=0, writeheadRA = 0;
