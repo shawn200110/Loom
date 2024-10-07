@@ -248,7 +248,7 @@ private:
     //FirstStage leftChainV, rightChainV, leftChainH, rightChainH;
 
     SecondStage leftChain, rightChain, leftAuxChain, rightAuxChain;
-    FFTProcessor fftProcessor;
+    FFTProcessor fft[2];
     MorphProcessor morphProcessor;
     FormantShiftProcessor formantProcessor;
 
