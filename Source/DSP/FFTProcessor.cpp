@@ -1,401 +1,139 @@
 #include "FFTProcessor.h"
-#include <math.h>
-#include <algorithm>
-#include <iterator>
 
-
-
-
-// Prepare function (optional)
-void FFTProcessor::prepare(double sampleRate, int samplesPerBlock)
+FFTProcessor::FFTProcessor() :
+    fft(fftOrder),
+    window(fftSize + 1, juce::dsp::WindowingFunction<float>::WindowingMethod::hann, false)
 {
-    //// This can be used to allocate additional resources or set up specific parameters
-    this->sampleRate = sampleRate;
-    this->samplesPerBlock = samplesPerBlock;
+    // Note that the window is of length `fftSize + 1` because JUCE's windows
+    // are symmetrical, which is wrong for overlap-add processing. To make the
+    // window periodic, set size to 1025 but only use the first 1024 samples.
 }
 
-// Process the left and right channels
-void FFTProcessor::processFFT(juce::AudioBuffer<float> bufferinput, int channel)
+void FFTProcessor::reset()
 {
-    // Get the audio blocks for left and right channels
-    //auto& block = cntxt.getOutputBlock();
+    count = 0;
+    pos = 0;
 
-    //juce::ScopedNoDenormals noDenormals;
-
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-   
-        
-
-    // Process the left channel with FFT
-    /*applyFFT(block, fftData);*/
-    applyFFT(bufferinput, channel);
-
-    // Perform any frequency domain processing here (both fftDataLeft and fftDataRight)
-
-    // Inverse FFT to convert back to time domain for left and right channels
-    //applyInverseFFT(block, fftData);
+    // Zero out the circular buffers.
+    std::fill(inputFifo.begin(), inputFifo.end(), 0.0f);
+    std::fill(inputFifoA.begin(), inputFifoA.end(), 0.0f);
+    std::fill(outputFifo.begin(), outputFifo.end(), 0.0f);
 }
 
-void FFTProcessor::processIFFT(float* m, float* p, int channel)
+void FFTProcessor::processBlock(float* data, float* dataA, int numSamples, bool bypassed)
 {
-    // Get the audio blocks for left and right channels
-    //auto& block = cntxt.getOutputBlock();
-
-
-    // Process the left channel with FFT
-
-    applyInverseFFT(m, p, channel);
-    /*applyInverseFFT(block, fftData);*/
-
-    // Perform any frequency domain processing here (both fftDataLeft and fftDataRight)
-
-    // Inverse FFT to convert back to time domain for left and right channels
-    //applyInverseFFT(block, fftData);
-}
-
-
-    // Function to apply FFT to a single channel (left or right)
-//void FFTProcessor::applyFFT(juce::dsp::AudioBlock<float>& audioBlock, juce::AudioBuffer<float>& fftData)
-//{
-//    const float* inputSamples = audioBlock.getChannelPointer(0);
-//
-//    // Copy input samples into FFT buffer (zero-pad if necessary)
-//    for (int i = 0; i < fftSize; ++i)
-//    {
-//        fftData.setSample(0, i, i < audioBlock.getNumSamples() ? inputSamples[i] : 0.0f);
-//    }
-//
-//    // Perform forward FFT
-//    fft.performRealOnlyForwardTransform(fftData.getWritePointer(0));
-//
-//    for (int i = 0; i < fftSize; i++) {
-//        std::complex<float> temp;
-//        temp.real(fftData.getWritePointer(0));
-//        temp.imag(fftData.getWritePointer(0))
-//    }
-//
-//    DBG("FFT Output Data:");
-//    for (int i = 0; i < fftSize; ++i)
-//    {
-//        if (i < 10)  // Again, limit to the first 10 values for easier viewing
-//            DBG("FFT Data " << i << ": " << fftData.getSample(0, i));
-//    }
-//
-//    storeFrequencyData(fftData);
-//}
-
-void FFTProcessor::applyFFT(juce::AudioBuffer<float> bufferinput, int channel) {
-
-    auto* channelData = bufferinput.getWritePointer(channel);
-
-    for (int x = 0; x < bufferinput.getNumSamples(); x++) {
-        float f = channelData[x];
-
-        int writehead = selectWritehead(channel);
-        int playhead = selectPlayhead(channel);
-        int windowLoc = selectWindowLoc(channel);
-        float* bufout = selectBufOut(channel);
-        float* btp = selectBTP(channel);
-
-        channelData[x] = bufout[writehead];
-        btp[playhead] = f;
-
-        
-        updateWindowLoc(channel);
-        updatePlayhead(channel, 0);
-        playhead = selectPlayhead(channel);
-        windowLoc = selectWindowLoc(channel);
-
-        if (windowLoc == fftsize / 4) {
-            windowLoc = 0;
-            int counter = 0;
-            for (int i = playhead; i < bufferinput.getNumSamples(); i++) {
-                segmented[counter] = btp[i];
-                counter++;
-                
-            }
-
-            for (int i = bufferinput.getNumSamples(); i < fftsize; i++) {
-                segmented[counter] = 0;
-                counter++;
-
-            }
-
-
-            for (int i = 0; i < playhead; i++) {
-                segmented[counter] = btp[i];
-                counter++;
-                
-            }
-
-            //window.multiplyWithWindowingTable(segmented, fftsize);
-            fourierf.performRealOnlyForwardTransform(segmented);
-            for (int i = 0; i < fftsize; i++) {
-                std::complex<float> temp;
-                temp.real(segmented[i * 2]);
-                temp.imag(segmented[i * 2 + 1]);
-
-                mag[i] = std::abs(temp);
-                phase[i] = std::arg(temp);
-            }
-            
-            updatePlayhead(channel, 1);
-        }
+    for (int i = 0; i < numSamples; ++i) {
+        data[i] = processSample(data[i], dataA[i], bypassed);
     }
 }
 
-// Function to apply inverse FFT and copy the result back to the audio buffer
-void FFTProcessor::applyInverseFFT(float* m, float* p, int channel)
+float FFTProcessor::processSample(float sample, float sampleA, bool bypassed)
 {
+    // Push the new sample value into the input FIFO.
+    inputFifo[pos] = sample;
+    inputFifoA[pos] = sampleA;
 
-    int writehead = selectWritehead(channel);
-    int playhead = selectPlayhead(channel);
-    int windowLoc = selectWindowLoc(channel);
-    float* bufout = selectBufOut(channel);
-    float* btp = selectBTP(channel);
+    // Read the output value from the output FIFO. Since it takes fftSize
+    // timesteps before actual samples are read from this FIFO instead of
+    // the initial zeros, the sound output is delayed by fftSize samples,
+    // which we will report as our latency.
+    float outputSample = outputFifo[pos];
 
+    // Once we've read the sample, set this position in the FIFO back to
+    // zero so we can add the IFFT results to it later.
+    outputFifo[pos] = 0.0f;
 
-    updateWritehead(channel, 0);
-    writehead = selectWritehead(channel);
-
-    if (windowLoc == fftsize / 4) {
-        
-        for (int i = 0; i < fftsize; i++) {
-            float real = std::cos(p[i]) * m[i];
-            float imag = std::sin(p[i]) * m[i];
-
-            segmented[i * 2] = real;
-            segmented[i * 2 + 1] = imag;
-
-
-        }
- 
-
-        fourieri.performRealOnlyInverseTransform(segmented);
-        //window.multiplyWithWindowingTable(segmented, fftsize);
-        
-        //normalizeArray(segmented, fftsize);
-
-
-        
-        for (int i = 0; i < fftsize; i++) {
-            if (i < (fftsize / 4) * 3) { // 75% overlap
-                bufout[(writehead + i) % fftsize] += segmented[i] * (2.f / 3.f);
-                //bufout[(writehead + i) % fftsize] += segmented[i];
-            }
-            else {
-                bufout[(writehead + i) % fftsize] = segmented[i] * (2.f / 3.f);
-                //bufout[(writehead + i) % fftsize] = segmented[i];
-            }
-        }
-
-        for (int i = 0; i < 200; i++) {
-            DBG("bufout " << i << ": " << bufout[i]);
-        }
-
-        
-        
-        updateWritehead(channel, 1);
+    // Advance the FIFO index and wrap around if necessary.
+    pos += 1;
+    if (pos == fftSize) {
+        pos = 0;
     }
 
-    
-
-}
-
-float* FFTProcessor::selectBufOut(int channel)
-{
-    if (channel == 0) return leftbufout;
-    if (channel == 1) return rightbufout;
-    if (channel == 2) return leftauxbufout;
-    if (channel == 3) return rightauxbufout;
-
-    return nullptr;  // Handle invalid channels
-}
-
-float* FFTProcessor::selectBTP(int channel)
-{
-
-    if (channel == 0) return leftbuf;
-    if (channel == 1) return rightbuf;
-    if (channel == 2) return leftauxbuf;
-    if (channel == 3) return rightauxbuf;
-    return nullptr;
-
-}
-
-void FFTProcessor::updatePlayhead(int channel, int after)
-{
-    const int overlapStep = fftsize / 4;  // 75% overlap (move by 128 samples for a 512-point FFT)
-
-    if (after == 0)
-    {
-        //if (channel == 0) playheadL += overlapStep;
-        //if (channel == 1) playheadR += overlapStep;
-        //if (channel == 2) playheadLA += overlapStep;
-        //if (channel == 3) playheadRA += overlapStep;
-        if (channel == 0) playheadL++;
-        if (channel == 1) playheadR++;
-        if (channel == 2) playheadLA++;
-        if (channel == 3) playheadRA++;
+    // Process the FFT frame once we've collected hopSize samples.
+    count += 1;
+    if (count == hopSize) {
+        count = 0;
+        processFrame(bypassed);
     }
 
-    if (after == 1)
-    {
-        // Reset the playhead if it exceeds the fftsize
-        if (channel == 0 && playheadL >= fftsize) playheadL = 0;
-        if (channel == 1 && playheadR >= fftsize) playheadR = 0;
-        if (channel == 2 && playheadLA >= fftsize) playheadLA = 0;
-        if (channel == 3 && playheadRA >= fftsize) playheadRA = 0;
+    return outputSample;
+}
+
+void FFTProcessor::processFrame(bool bypassed)
+{
+    const float* inputPtr = inputFifo.data();
+    const float* inputPtrA = inputFifoA.data();
+    float* fftPtr = fftData.data();
+    float* fftPtrA = fftDataA.data();
+
+    // Copy the input FIFO into the FFT working space in two parts.
+    std::memcpy(fftPtr, inputPtr + pos, (fftSize - pos) * sizeof(float));
+    std::memcpy(fftPtrA, inputPtrA + pos, (fftSize - pos) * sizeof(float));
+    if (pos > 0) {
+        std::memcpy(fftPtr + fftSize - pos, inputPtr, pos * sizeof(float));
+        std::memcpy(fftPtrA + fftSize - pos, inputPtrA, pos * sizeof(float));
+    }
+
+    // Apply the window to avoid spectral leakage.
+    window.multiplyWithWindowingTable(fftPtr, fftSize);
+    window.multiplyWithWindowingTable(fftPtrA, fftSize);
+
+    if (!bypassed) {
+        // Perform the forward FFT.
+        fft.performRealOnlyForwardTransform(fftPtr, true);
+        fft.performRealOnlyForwardTransform(fftPtrA, true);
+
+        // Do stuff with the FFT data.
+        processSpectrum(fftPtr, fftPtrA, numBins);
+
+        // Perform the inverse FFT.
+        fft.performRealOnlyInverseTransform(fftPtr);
+    }
+
+    // Apply the window again for resynthesis.
+    window.multiplyWithWindowingTable(fftPtr, fftSize);
+
+    // Scale down the output samples because of the overlapping windows.
+    for (int i = 0; i < fftSize; ++i) {
+        fftPtr[i] *= windowCorrection;
+    }
+
+    // Add the IFFT results to the output FIFO.
+    for (int i = 0; i < pos; ++i) {
+        outputFifo[i] += fftData[i + fftSize - pos];
+    }
+    for (int i = 0; i < fftSize - pos; ++i) {
+        outputFifo[i + pos] += fftData[i];
     }
 }
 
-
-int FFTProcessor::selectPlayhead(int channel)
+void FFTProcessor::processSpectrum(float* data, float* dataA, int numBins)
 {
-    if (channel == 0) return playheadL;
-    if (channel == 1) return playheadR;
-    if (channel == 2) return playheadLA;
-    if (channel == 3) return playheadRA;
-}
+    // The spectrum data is floats organized as [re, im, re, im, ...]
+    // but it's easier to deal with this as std::complex values.
+    auto* cdata = reinterpret_cast<std::complex<float>*>(data);
+    auto* cdataA = reinterpret_cast<std::complex<float>*>(dataA);
+
+    for (int i = 0; i < numBins; ++i) {
+        // Usually we want to work with the magnitude and phase rather
+        // than the real and imaginary parts directly.
+        float magnitude = std::abs(cdata[i]);
+        float phase = std::arg(cdata[i]);
+        float magnitudeA = std::abs(cdataA[i]);
+        float phaseA = std::arg(cdataA[i]);
+
+        float newMag = (magnitude + magnitudeA) / 2;
+        float newPhase = (phase + phaseA) / 2;
 
 
-void FFTProcessor::updateWritehead(int channel, int after)
-{
-    const int overlapStep = fftsize / 4;  // 75% overlap (move by 128 samples for a 512-point FFT)
 
-    if (after == 0) {
-        if (channel == 0) writeheadL++;
-        if (channel == 1) writeheadR++;
-        if (channel == 2) writeheadLA++;
-        if (channel == 3) writeheadRA++;
-        //if (channel == 0) writeheadL+=overlapStep;
-        //if (channel == 1) writeheadR+= overlapStep;
-        //if (channel == 2) writeheadLA+= overlapStep;
-        //if (channel == 3) writeheadRA+= overlapStep;
-    }
+        // This is where you'd do your spectral processing...
 
-    if (after == 1)
-    {
-        // Reset the writehead if it exceeds the fftsize
-        if (channel == 0 && writeheadL >= fftsize) writeheadL = 0;
-        if (channel == 1 && writeheadR >= fftsize) writeheadR = 0;
-        if (channel == 2 && writeheadLA >= fftsize) writeheadLA = 0;
-        if (channel == 3 && writeheadRA >= fftsize) writeheadRA = 0;
-    }
-}
+        // Silly example where we change the phase of each frequency bin
+        // somewhat randomly. Uncomment the following line to enable.
+        //phase *= float(i);
 
-int FFTProcessor::selectWritehead(int channel)
-{
-    if (channel == 0) return writeheadL;
-    if (channel == 1) return writeheadR;
-    if (channel == 2) return writeheadLA;
-    if (channel == 3) return writeheadRA;
-}
-
-void FFTProcessor::updateWindowLoc(int channel)
-{
-    
-        if (channel == 0)
-        {
-            if (windowL == fftsize / 4) {
-                windowL = 0;
-            }
-            windowL++;
-            
-        }
-
-        if (channel == 1)
-        {
-            if (windowR == fftsize / 4) {
-                windowR = 0;
-            }
-            windowR++;
-            
-        }
-
-        if (channel == 2)
-        {
-            if (windowLA == fftsize / 4) {
-                windowLA = 0;
-            }
-            windowLA++;
-            
-        }
-
-        if (channel == 3)
-        {
-            if (windowRA == fftsize / 4) {
-                windowRA = 0;
-            }
-            windowRA++;
-            
-        }
-
-        
-    
-}
-
-int FFTProcessor::selectWindowLoc(int channel)
-{
-
-    if (channel == 0)
-    {
-        int windowLoc = windowL;
-        return windowLoc;
-    }
-
-    if (channel == 1)
-    {
-        int windowLoc = windowR;
-        return windowLoc;
-    }
-
-    if (channel == 2)
-    {
-        int windowLoc = windowLA;
-        return windowLoc;
-    }
-
-    if (channel == 3)
-    {
-        int windowLoc = windowRA;
-        return windowLoc;
-    }
-}
-
-float* FFTProcessor::getOutputData(int channel) {
-    if (channel == 0) return leftbufout;
-    if (channel == 1) return rightbufout;
-    if (channel == 2) return leftauxbufout;
-    if (channel == 3) return rightauxbufout;
-}
-
-void FFTProcessor::normalizeArray(float* array, int size)
-{
-    // Step 1: Find the maximum absolute value in the array
-    float maxVal = 0.0f;
-    for (int i = 0; i < size; ++i)
-    {
-        if (std::abs(array[i]) > maxVal)
-        {
-            maxVal = std::abs(array[i]);
-        }
-    }
-
-    // Step 2: If maxVal is 0, the array is already normalized (all elements are 0)
-    if (maxVal == 0.0f)
-    {
-        return; // Avoid division by zero
-    }
-
-    // Step 3: Scale all elements of the array by the maximum value
-    for (int i = 0; i < size; ++i)
-    {
-        array[i] /= maxVal; // Scale to range -1 to 1
+        // Convert magnitude and phase back into a complex number.
+        cdata[i] = std::polar(newMag, newPhase);
     }
 }

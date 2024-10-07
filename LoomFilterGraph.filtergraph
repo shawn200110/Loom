@@ -62,13 +62,13 @@
     </LAYOUT>
   </FILTER>
   <FILTER uid="6" x="0.46375" y="0.3770161290322581" useARA="0" uiLastX_Normal="276"
-          uiLastY_Normal="313" uiopen_Normal="1">
+          uiLastY_Normal="313" uiopen_Normal="0">
     <PLUGIN name="AudioFilePlayer" format="VST3" category="Fx" manufacturer="Matkat Music LLC"
             version="1.0.0" file="C:\Users\Shawn Cawley\Documents\GitHub\AudioFilePlayer\Builds\VisualStudio2019\x64\Debug\VST3\AudioFilePlayer.vst3\Contents\x86_64-win\AudioFilePlayer.vst3"
-            uniqueId="79fe81c" isInstrument="0" fileTime="191247a082a" infoUpdateTime="191f609cf83"
+            uniqueId="79fe81c" isInstrument="0" fileTime="191247a082a" infoUpdateTime="19267831007"
             numInputs="2" numOutputs="2" isShell="0" hasARAExtension="0"
             uid="e95d02c7"/>
-    <STATE>315.VMjLgHS....O+fWarAhckI2bo8la8HRLt.iHfTlai8FYo41Y8HRUTYTK3HxO9.BOVMEUy.Ea0cVZtMEcgQWY9vSRC8Vav8lak4Fc9DSMx3BTIISX1UEaho2ZVkUdAAkKAwDUigWRWkEcQ0VTucmUY4BQt.UQLolShUELhsVRxHlXMUjVmMVagYFSTgkL2YUVzbWQQsVSxnkd3XjXhkTUYcVPWkEdvHUXvzzUZk1cqE0aIcUVlolZgYFTEo0ZAgGUwsVaKMWPxvjKt3hKt3hKt3hKt3hKtQUUCUEQTg2ZrM1YQcUVDUjQicVPP4RPHQEY1UTLhkWPP4RPL4hKi4hKt3hKt3hKtXlTU0DUQAURWoULEYzXqEEUXoWQFwyKIMzasA2atUlaz4COuX0TTMCTrU2Yo41TzEFck4C.</STATE>
+    <STATE>335.VMjLgXT....O+fWarAhckI2bo8la8HRLt.iHfTlai8FYo41Y8HRUTYTK3HxO9.BOVMEUy.Ea0cVZtMEcgQWY9vSRC8Vav8lak4Fc9DiM23BTIISX1UEaho2ZVkUdAAkKAwDUigWRWkEcQ0VTucmUY4BQ1MUQLolShUELhsVRxHlXMUjVmMVagYFSTgkL2YUVzbWQQUWSVM1bUwVX50zQWMDNFk0ZIUUV4giUigWSVkUd2AiXy0zUKoGNwDlbMczU4giUiQWTwHlXMcEVy.iPh4VRWgUdUw1RxTDai4hKt3hKt3hKt3hKt3haTU0PUQDU3sFaicVTWkEQEYzXmEDTtDDRTQlcEEiX4EDTtDDSt3xXt3hKt3hKt3hKlIUUMQUTPkzUZESQFM1ZQQEV5UjQ77RRC8Vav8lak4Fc9vyKVMEUy.Ea0cVZtMEcgQWY9..</STATE>
     <LAYOUT>
       <INPUTS>
         <BUS index="0" layout="L R"/>
@@ -82,10 +82,28 @@
           uiLastY_Normal="412" uiopen_Normal="0">
     <PLUGIN name="Loom" format="VST3" category="Fx" manufacturer="STSheep"
             version="1.0.0" file="C:\Users\Shawn Cawley\Documents\CodeResources\Loom\Builds\VisualStudio2022\x64\Debug\VST3\Loom.vst3\Contents\x86_64-win\Loom.vst3"
-            uniqueId="f6a2e225" isInstrument="0" fileTime="191f6056aaf" infoUpdateTime="191f609cf84"
-            numInputs="2" numOutputs="2" isShell="0" hasARAExtension="0"
+            uniqueId="f6a2e225" isInstrument="0" fileTime="192677f1c01" infoUpdateTime="19267831008"
+            numInputs="4" numOutputs="2" isShell="0" hasARAExtension="0"
             uid="e955530a"/>
     <STATE>191.VMjLgXK....O+fWarAhckI2bo8la8HRLt.iHfTlai8FYo41Y8HRUTYTK3HxO9.BOVMEUy.Ea0cVZtMEcgQWY9vSRC8Vav8lak4Fc9XCLt3hKt3hKt3hKt3hYRUUSTEETIckVwTjQisVTTgkdEYjKAQjYPQSPWgUdMcjKAQjct3hdA4hKt3hKt3hKtnTUv.UQAslXuk0UXoWUFE0YQcEV77RRC8Vav8lak4Fc9vyKVMEUy.Ea0cVZtMEcgQWY9..</STATE>
+    <LAYOUT>
+      <INPUTS>
+        <BUS index="0" layout="L R"/>
+        <BUS index="1" layout="L R"/>
+      </INPUTS>
+      <OUTPUTS>
+        <BUS index="0" layout="L R"/>
+      </OUTPUTS>
+    </LAYOUT>
+  </FILTER>
+  <FILTER uid="14" x="0.67625" y="0.3629032258064516" useARA="0" uiLastX_Normal="869"
+          uiLastY_Normal="449" uiopen_Normal="0">
+    <PLUGIN name="AudioFilePlayer" format="VST3" category="Fx" manufacturer="Matkat Music LLC"
+            version="1.0.0" file="C:\Users\Shawn Cawley\Documents\GitHub\AudioFilePlayer\Builds\VisualStudio2019\x64\Debug\VST3\AudioFilePlayer.vst3\Contents\x86_64-win\AudioFilePlayer.vst3"
+            uniqueId="79fe81c" isInstrument="0" fileTime="191247a082a" infoUpdateTime="19267831008"
+            numInputs="2" numOutputs="2" isShell="0" hasARAExtension="0"
+            uid="e95d02c7"/>
+    <STATE>340.VMjLgrT....O+fWarAhckI2bo8la8HRLt.iHfTlai8FYo41Y8HRUTYTK3HxO9.BOVMEUy.Ea0cVZtMEcgQWY9vSRC8Vav8lak4Fc9DyMw3BTIISX1UEaho2ZVkUdAAkKAwDUigWRWkEcQ0VTucmUY4BQ1QUQLolShUELhsVRxHlXMUjVmMVagYFSTgkL2YUVzbWQQUWSVM1bUwVX50zQWMDNFk0ZIUUV4giUigWSVkUd2AiXy0zUKoGNwDlbMczU4giUiQWTwHlXMYUVxcWLgMGTwDFLIYTXqACZLQmXWgULA4hKt3hKt3hKt3hKtXlTU0DUQAURWoULEYzXqEEUXoWQF4RPDYFTzDzUXkWSG4RPDYmKtnWPt3hKt3hKt3hKJUELPUTPqI1aYcEV5UkQQcVTWgEOujzPu0Fbu4VYtQmO77hUSQ0LPwVcmklaSQWXzUlO..</STATE>
     <LAYOUT>
       <INPUTS>
         <BUS index="0" layout="L R"/>
@@ -99,4 +117,6 @@
   <CONNECTION srcFilter="6" srcChannel="1" dstFilter="13" dstChannel="1"/>
   <CONNECTION srcFilter="13" srcChannel="0" dstFilter="3" dstChannel="0"/>
   <CONNECTION srcFilter="13" srcChannel="1" dstFilter="3" dstChannel="1"/>
+  <CONNECTION srcFilter="14" srcChannel="0" dstFilter="13" dstChannel="2"/>
+  <CONNECTION srcFilter="14" srcChannel="1" dstFilter="13" dstChannel="3"/>
 </FILTERGRAPH>

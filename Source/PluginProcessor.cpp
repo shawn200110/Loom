@@ -105,13 +105,11 @@ void LoomAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     spec.numChannels = 1;
     spec.sampleRate = sampleRate;
 
-    fftProcessor.prepare(sampleRate, samplesPerBlock);
+    setLatencySamples(fft[0].getLatencyInSamples());
 
-    int fftBlockSize = 512;
-    leftChannelFifo.prepare(fftBlockSize);
-    rightChannelFifo.prepare(fftBlockSize);
-    /*leftAuxChannelFifo.prepare(fftBlockSize);
-    rightAuxChannelFifo.prepare(fftBlockSize);*/
+    fft[0].reset();
+    fft[1].reset();
+
 }
 
 void LoomAudioProcessor::releaseResources()
@@ -149,151 +147,36 @@ bool LoomAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) con
 void LoomAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
-    auto totalNumInputChannels = getTotalNumInputChannels();
-    auto totalNumOutputChannels = getTotalNumOutputChannels();
+    auto numInputChannels = getTotalNumInputChannels();
+    auto numOutputChannels = getTotalNumOutputChannels();
+    auto numSamples = buffer.getNumSamples();
 
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
-    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear(i, 0, buffer.getNumSamples());
+    for (auto i = numInputChannels; i < numOutputChannels; ++i) {
+        buffer.clear(i, 0, numSamples);
+    }
 
-    juce::dsp::AudioBlock<float> block(buffer);
+    //bool bypassed = apvts.getRawParameterValue("Bypass")->load();
+    bool bypassed = 0;
 
-    generateSineWave(buffer, 440.0f, 1.0f, getSampleRate());
-    outputToCSV(buffer.getWritePointer(0),buffer.getNumSamples(), "C:/Users/Shawn Cawley/Documents/CodeResources/Loom/inputExample.csv");
-    leftChannelFifo.update(buffer);
-    rightChannelFifo.update(buffer);
-    //leftAuxChannelFifo.update(buffer);
-    //rightAuxChannelFifo.update(buffer);
- 
+    float* channelL = buffer.getWritePointer(0);
+    float* channelR = buffer.getWritePointer(1);
+    float* channelLA = buffer.getWritePointer(2);
+    float* channelRA = buffer.getWritePointer(3);
 
+    // Processing on a sample-by-sample basis:
+    for (int sample = 0; sample < numSamples; ++sample) {
+        float sampleL = channelL[sample];
+        float sampleR = channelR[sample];
+        float sampleLA = channelLA[sample];
+        float sampleRA = channelRA[sample];
 
-    // Check if all FIFOs have a complete block ready for FFT processing
-    //if (leftChannelFifo.getNumCompleteBuffersAvailable() > 0 &&
-    //    rightChannelFifo.getNumCompleteBuffersAvailable() > 0 &&
-    //    leftAuxChannelFifo.getNumCompleteBuffersAvailable() > 0 &&
-    //    rightAuxChannelFifo.getNumCompleteBuffersAvailable() > 0)
-    //if (leftChannelFifo.getNumCompleteBuffersAvailable() > 0 &&
-    //    rightChannelFifo.getNumCompleteBuffersAvailable() > 0)
-    //{
-        // Create buffers to hold the FFT input
-        juce::AudioBuffer<float> leftFftInput, rightFftInput, leftAuxFftInput, rightAuxFftInput;
+        sampleL = fft[0].processSample(sampleL, sampleLA, bypassed);
+        sampleR = fft[1].processSample(sampleR, sampleRA, bypassed);
 
-        // Pull the complete buffer from each FIFO
-        leftChannelFifo.getAudioBuffer(leftFftInput);
-        rightChannelFifo.getAudioBuffer(rightFftInput);
-        /*leftAuxChannelFifo.getAudioBuffer(leftAuxFftInput);
-        rightAuxChannelFifo.getAudioBuffer(rightAuxFftInput);*/
-
-        //auto* LPtr = leftFftInput.getReadPointer(0);
-        //auto* LAPtr = leftAuxFftInput.getReadPointer(0);
-
-        //for (int i = 0; i < 10; ++i)
-        //{
-        //   DBG("LPtr " << i << ": " << LPtr[i]);
-        //   //DBG("LAPtr " << i << ": " << LAPtr[i]);
-        // };
-
-        //fftProcessor.processFFT(leftFftInput,0);
-        fftProcessor.processFFT(buffer, 0);
-        float* magL = fftProcessor.getMagnitude();
-        float* phaseL = fftProcessor.getPhase();
-
-        float* segL = fftProcessor.getSegmeneted();
-        outputToCSV(segL, 512, "C:/Users/Shawn Cawley/Documents/CodeResources/Loom/segExample.csv");
-
-
-        //fftProcessor.processFFT(rightFftInput,1);
-        fftProcessor.processFFT(buffer, 1);
-        float* magR = fftProcessor.getMagnitude();
-        float* phaseR = fftProcessor.getPhase();
-        
-
-        outputToCSV(magL, leftFftInput.getNumSamples(), "C:/Users/Shawn Cawley/Documents/CodeResources/Loom/magExample.csv");
-        //outputToCSV(phaseL, leftFftInput.getNumSamples(), "C:/Users/Shawn Cawley/Documents/CodeResources/Loom/imagExample.csv");
-
-
-
-        //fftProcessor.processFFT(leftAuxFftInput,2);
-        //fftProcessor.processFFT(buffer, 2);
-        //float* magLA = fftProcessor.getMagnitude();
-        //float* phaseLA = fftProcessor.getPhase();
-
-        //for (int i = 0; i < 10; ++i)
-        //{
-        //    DBG("magLA " << i << ": " << magLA[i]);
-        //};
-
-        //fftProcessor.processFFT(rightAuxFftInput,3);
-        //fftProcessor.processFFT(buffer, 3);
-        //float* magRA = fftProcessor.getMagnitude();
-        //float* phaseRA = fftProcessor.getPhase();
-
-
-
-
-
-
-
-        // Morph
-
-        // Formant Shift
-
-
-        // Inverse FFT
-        fftProcessor.processIFFT(magL, phaseL, 0);
-        float* outL = fftProcessor.getOutputData(0);
-
-        /*for (int i = 0; i < 100; ++i)
-        {
-            DBG("outL " << i << ": " << outL[i]);
-        };*/
-
-        fftProcessor.processIFFT(magR, phaseR, 1);
-        float* outR = fftProcessor.getOutputData(1);
-        //fftProcessor.processIFFT(magLA, phaseLA, 2);
-        //float* outLA = fftProcessor.getOutputData(2);
-        //fftProcessor.processIFFT(magRA, phaseRA,3);
-        //float* outRA = fftProcessor.getOutputData(3);
-
-        
-        //for (int i = 0; i < 10; ++i)
-        //{
-        //    DBG("outRA " << i << ": " << outRA[i]);
-        //};
-
-        // Get write pointer to the right channel (channel 1)
-        float* leftChannelData = buffer.getWritePointer(0);
-        float* rightChannelData = buffer.getWritePointer(1);
-
-
-        for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
-        {
-            leftChannelData[sample] = outL[sample];
-            rightChannelData[sample] = outR[sample];
-
-        }
-
-        outputToCSV(leftChannelData, buffer.getNumSamples(),"C:/Users/Shawn Cawley/Documents/CodeResources/Loom/outputExample.csv");
-
-        //for (int sample = 300; sample < 500; ++sample)
-        //{
-        //    //leftChannelData[sample] = outL[sample];
-        //    DBG("ChannelData " << sample << ": " << channelData[sample]);
-        //    DBG("NumSamplesInBuffer" << buffer.getNumSamples());
-        //    DBG("outR: " << outR[sample]);
-        //    DBG("outL: " << outR[sample]);
-        //    //rightChannelData[sample] = outR[sample];  // Output myFloatArray to the right channel
-
-        //}
-          
-
-
-    //}
+        channelL[sample] = sampleL;
+        channelR[sample] = sampleR;
+    }
+    
 }
 
 //==============================================================================
