@@ -12,7 +12,7 @@
         <BUS index="0" layout="disabled"/>
       </INPUTS>
       <OUTPUTS>
-        <BUS index="0" layout="disabled"/>
+        <BUS index="0" layout="L R"/>
       </OUTPUTS>
     </LAYOUT>
   </FILTER>
@@ -34,7 +34,7 @@
   <FILTER uid="3" x="0.5" y="0.9" useARA="0">
     <PLUGIN name="Audio Output" descriptiveName="" format="Internal" category="I/O devices"
             manufacturer="JUCE" version="1.0" file="" uniqueId="724248cb"
-            isInstrument="0" fileTime="0" infoUpdateTime="0" numInputs="0"
+            isInstrument="0" fileTime="0" infoUpdateTime="0" numInputs="2"
             numOutputs="0" isShell="0" hasARAExtension="0" uid="724248cb"/>
     <STATE>0.</STATE>
     <LAYOUT>
@@ -62,13 +62,13 @@
     </LAYOUT>
   </FILTER>
   <FILTER uid="6" x="0.46375" y="0.3770161290322581" useARA="0" uiLastX_Normal="276"
-          uiLastY_Normal="313" uiopen_Normal="0">
+          uiLastY_Normal="313" uiopen_Normal="1">
     <PLUGIN name="AudioFilePlayer" format="VST3" category="Fx" manufacturer="Matkat Music LLC"
             version="1.0.0" file="C:\Users\Shawn Cawley\Documents\GitHub\AudioFilePlayer\Builds\VisualStudio2019\x64\Debug\VST3\AudioFilePlayer.vst3\Contents\x86_64-win\AudioFilePlayer.vst3"
-            uniqueId="79fe81c" isInstrument="0" fileTime="191247a082a" infoUpdateTime="19267831007"
+            uniqueId="79fe81c" isInstrument="0" fileTime="191247a082a" infoUpdateTime="1926810795b"
             numInputs="2" numOutputs="2" isShell="0" hasARAExtension="0"
             uid="e95d02c7"/>
-    <STATE>335.VMjLgXT....O+fWarAhckI2bo8la8HRLt.iHfTlai8FYo41Y8HRUTYTK3HxO9.BOVMEUy.Ea0cVZtMEcgQWY9vSRC8Vav8lak4Fc9DiM23BTIISX1UEaho2ZVkUdAAkKAwDUigWRWkEcQ0VTucmUY4BQ1MUQLolShUELhsVRxHlXMUjVmMVagYFSTgkL2YUVzbWQQUWSVM1bUwVX50zQWMDNFk0ZIUUV4giUigWSVkUd2AiXy0zUKoGNwDlbMczU4giUiQWTwHlXMcEVy.iPh4VRWgUdUw1RxTDai4hKt3hKt3hKt3hKt3haTU0PUQDU3sFaicVTWkEQEYzXmEDTtDDRTQlcEEiX4EDTtDDSt3xXt3hKt3hKt3hKlIUUMQUTPkzUZESQFM1ZQQEV5UjQ77RRC8Vav8lak4Fc9vyKVMEUy.Ea0cVZtMEcgQWY9..</STATE>
+    <STATE>323.VMjLgnS....O+fWarAhckI2bo8la8HRLt.iHfTlai8FYo41Y8HRUTYTK3HxO9.BOVMEUy.Ea0cVZtMEcgQWY9vSRC8Vav8lak4Fc9DSM33BTIISX1UEaho2ZVkUdAAkKAwDUigWRWkEcQ0VTucmUY4BQlEUQLolShUELhsVRxHlXMUjVmMVagYFSTgkL2YUVzbWQQUWSVM1bUwVX50zQWMDNFk0ZIUUV4giUigWSVkUd2UzT0giUgIVUFQ1YvXjXxUULTUWUsElZEk1RxTDai4hKt3hKt3hKt3hKt3haTU0PUQDU3sFaicVTWkEQEYzXmEDTtDDRTQlcEEiX4EDTtDDSt3xXt3hKt3hKt3hKlIUUMQUTPkzUZESQFM1ZQQEV5UjQ77RRC8Vav8lak4Fc9vyKVMEUy.Ea0cVZtMEcgQWY9..</STATE>
     <LAYOUT>
       <INPUTS>
         <BUS index="0" layout="L R"/>
@@ -82,7 +82,7 @@
           uiLastY_Normal="412" uiopen_Normal="0">
     <PLUGIN name="Loom" format="VST3" category="Fx" manufacturer="STSheep"
             version="1.0.0" file="C:\Users\Shawn Cawley\Documents\CodeResources\Loom\Builds\VisualStudio2022\x64\Debug\VST3\Loom.vst3\Contents\x86_64-win\Loom.vst3"
-            uniqueId="f6a2e225" isInstrument="0" fileTime="192677f1c01" infoUpdateTime="19267831008"
+            uniqueId="f6a2e225" isInstrument="0" fileTime="192680f50fc" infoUpdateTime="1926810795c"
             numInputs="4" numOutputs="2" isShell="0" hasARAExtension="0"
             uid="e955530a"/>
     <STATE>191.VMjLgXK....O+fWarAhckI2bo8la8HRLt.iHfTlai8FYo41Y8HRUTYTK3HxO9.BOVMEUy.Ea0cVZtMEcgQWY9vSRC8Vav8lak4Fc9XCLt3hKt3hKt3hKt3hYRUUSTEETIckVwTjQisVTTgkdEYjKAQjYPQSPWgUdMcjKAQjct3hdA4hKt3hKt3hKtnTUv.UQAslXuk0UXoWUFE0YQcEV77RRC8Vav8lak4Fc9vyKVMEUy.Ea0cVZtMEcgQWY9..</STATE>
@@ -97,13 +97,13 @@
     </LAYOUT>
   </FILTER>
   <FILTER uid="14" x="0.67625" y="0.3629032258064516" useARA="0" uiLastX_Normal="869"
-          uiLastY_Normal="449" uiopen_Normal="0">
+          uiLastY_Normal="449" uiopen_Normal="1">
     <PLUGIN name="AudioFilePlayer" format="VST3" category="Fx" manufacturer="Matkat Music LLC"
             version="1.0.0" file="C:\Users\Shawn Cawley\Documents\GitHub\AudioFilePlayer\Builds\VisualStudio2019\x64\Debug\VST3\AudioFilePlayer.vst3\Contents\x86_64-win\AudioFilePlayer.vst3"
-            uniqueId="79fe81c" isInstrument="0" fileTime="191247a082a" infoUpdateTime="19267831008"
+            uniqueId="79fe81c" isInstrument="0" fileTime="191247a082a" infoUpdateTime="1926810795c"
             numInputs="2" numOutputs="2" isShell="0" hasARAExtension="0"
             uid="e95d02c7"/>
-    <STATE>340.VMjLgrT....O+fWarAhckI2bo8la8HRLt.iHfTlai8FYo41Y8HRUTYTK3HxO9.BOVMEUy.Ea0cVZtMEcgQWY9vSRC8Vav8lak4Fc9DyMw3BTIISX1UEaho2ZVkUdAAkKAwDUigWRWkEcQ0VTucmUY4BQ1QUQLolShUELhsVRxHlXMUjVmMVagYFSTgkL2YUVzbWQQUWSVM1bUwVX50zQWMDNFk0ZIUUV4giUigWSVkUd2AiXy0zUKoGNwDlbMczU4giUiQWTwHlXMYUVxcWLgMGTwDFLIYTXqACZLQmXWgULA4hKt3hKt3hKt3hKtXlTU0DUQAURWoULEYzXqEEUXoWQF4RPDYFTzDzUXkWSG4RPDYmKtnWPt3hKt3hKt3hKJUELPUTPqI1aYcEV5UkQQcVTWgEOujzPu0Fbu4VYtQmO77hUSQ0LPwVcmklaSQWXzUlO..</STATE>
+    <STATE>323.VMjLgnS....O+fWarAhckI2bo8la8HRLt.iHfTlai8FYo41Y8HRUTYTK3HxO9.BOVMEUy.Ea0cVZtMEcgQWY9vSRC8Vav8lak4Fc9DSM33BTIISX1UEaho2ZVkUdAAkKAwDUigWRWkEcQ0VTucmUY4BQlEUQLolShUELhsVRxHlXMUjVmMVagYFSTgkL2YUVzbWQQUWSVM1bUwVX50zQWMDNFk0ZIUUV4giUigWSVkUd2UzT0giUgIVUFQ1YvXjXxUULTUWUsElZIk1RxTDai4hKt3hKt3hKt3hKt3haTU0PUQDU3sFaicVTWkEQEYzXmEDTtDDRTQlcEEiX4EDTtDDSt3xXt3hKt3hKt3hKlIUUMQUTPkzUZESQFM1ZQQEV5UjQ77RRC8Vav8lak4Fc9vyKVMEUy.Ea0cVZtMEcgQWY9..</STATE>
     <LAYOUT>
       <INPUTS>
         <BUS index="0" layout="L R"/>

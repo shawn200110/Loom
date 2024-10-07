@@ -13,21 +13,22 @@
 //==============================================================================
 LoomAudioProcessor::LoomAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
-     : AudioProcessor (BusesProperties()
-                     #if ! JucePlugin_IsMidiEffect
-                      #if ! JucePlugin_IsSynth
-                       .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
-                      #endif
-                       .withInput ("Aux Input", juce::AudioChannelSet::stereo(), true)
-                       .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
-                     #endif
-                       )
+    : AudioProcessor(BusesProperties()
+#if ! JucePlugin_IsMidiEffect
+#if ! JucePlugin_IsSynth
+        .withInput("Input", juce::AudioChannelSet::stereo(), true)
+#endif
+        .withInput("Aux Input", juce::AudioChannelSet::stereo(), true)
+        .withOutput("Output", juce::AudioChannelSet::stereo(), true)
+#endif
+    )
 #endif
 {
 }
 
 LoomAudioProcessor::~LoomAudioProcessor()
 {
+
 }
 
 //==============================================================================
@@ -155,13 +156,16 @@ void LoomAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
         buffer.clear(i, 0, numSamples);
     }
 
-    //bool bypassed = apvts.getRawParameterValue("Bypass")->load();
-    bool bypassed = 0;
 
     float* channelL = buffer.getWritePointer(0);
     float* channelR = buffer.getWritePointer(1);
     float* channelLA = buffer.getWritePointer(2);
     float* channelRA = buffer.getWritePointer(3);
+
+    bool bypass = 0;
+
+    auto chainSettings = getChainSettings(apvts);
+
 
     // Processing on a sample-by-sample basis:
     for (int sample = 0; sample < numSamples; ++sample) {
@@ -170,8 +174,8 @@ void LoomAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
         float sampleLA = channelLA[sample];
         float sampleRA = channelRA[sample];
 
-        sampleL = fft[0].processSample(sampleL, sampleLA, bypassed);
-        sampleR = fft[1].processSample(sampleR, sampleRA, bypassed);
+        sampleL = fft[0].processSample(sampleL, sampleLA, chainSettings);
+        sampleR = fft[1].processSample(sampleR, sampleRA, chainSettings);
 
         channelL[sample] = sampleL;
         channelR[sample] = sampleR;
@@ -187,7 +191,8 @@ bool LoomAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* LoomAudioProcessor::createEditor()
 {
-    return new LoomAudioProcessorEditor (*this);
+    //return new LoomAudioProcessorEditor (*this);
+    return new juce::GenericAudioProcessorEditor(*this);
 }
 
 //==============================================================================
@@ -196,12 +201,15 @@ void LoomAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
+
 }
 
 void LoomAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
+
+    
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout
@@ -209,14 +217,7 @@ LoomAudioProcessor::createParameterLayout()
 {
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
 
-    layout.add(std::make_unique<juce::AudioParameterFloat>("numFBs", "# Freq Bands", juce::NormalisableRange <float>(8.f,64.f,4.f, 1.f), 1.f));
-
-    layout.add(std::make_unique<juce::AudioParameterFloat>("fmt", "Formant Shift", juce::NormalisableRange <float>(-12.f, 12.f, 0.1f, 1.f),1.f));
-
-    layout.add(std::make_unique<juce::AudioParameterFloat>("atk", "Attack", juce::NormalisableRange <float>(0.f, 0.1f, 0.01f, 1.f), 1.f));
-
-    layout.add(std::make_unique<juce::AudioParameterFloat>("rls", "Release", juce::NormalisableRange <float>(0.01f, 0.5f, 0.01f, 1.f), 1.f));
-
+    layout.add(std::make_unique<juce::AudioParameterFloat>("morphFactor", "Morph Factor", juce::NormalisableRange <float>(0.f,1.f,0.02f, 1.f), 0.5f));
 
     return layout;
 }
@@ -269,4 +270,13 @@ void LoomAudioProcessor::outputToCSV(float* data, int numSamples, const std::str
 
     // Close the file
     file.close();
+}
+
+ChainSettings getChainSettings(juce::AudioProcessorValueTreeState& apvts)
+{
+    ChainSettings settings;
+
+    settings.morphFactor = apvts.getRawParameterValue("morphFactor")->load(); // Non-normalized parameters
+
+    return settings;
 }

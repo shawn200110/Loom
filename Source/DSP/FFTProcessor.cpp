@@ -20,14 +20,14 @@ void FFTProcessor::reset()
     std::fill(outputFifo.begin(), outputFifo.end(), 0.0f);
 }
 
-void FFTProcessor::processBlock(float* data, float* dataA, int numSamples, bool bypassed)
+void FFTProcessor::processBlock(float* data, float* dataA, int numSamples, ChainSettings settings)
 {
     for (int i = 0; i < numSamples; ++i) {
-        data[i] = processSample(data[i], dataA[i], bypassed);
+        data[i] = processSample(data[i], dataA[i], settings);
     }
 }
 
-float FFTProcessor::processSample(float sample, float sampleA, bool bypassed)
+float FFTProcessor::processSample(float sample, float sampleA, ChainSettings settings)
 {
     // Push the new sample value into the input FIFO.
     inputFifo[pos] = sample;
@@ -53,18 +53,19 @@ float FFTProcessor::processSample(float sample, float sampleA, bool bypassed)
     count += 1;
     if (count == hopSize) {
         count = 0;
-        processFrame(bypassed);
+        processFrame(settings);
     }
 
     return outputSample;
 }
 
-void FFTProcessor::processFrame(bool bypassed)
+void FFTProcessor::processFrame(ChainSettings settings)
 {
     const float* inputPtr = inputFifo.data();
     const float* inputPtrA = inputFifoA.data();
     float* fftPtr = fftData.data();
     float* fftPtrA = fftDataA.data();
+    bool bypassed = 0;
 
     // Copy the input FIFO into the FFT working space in two parts.
     std::memcpy(fftPtr, inputPtr + pos, (fftSize - pos) * sizeof(float));
@@ -84,7 +85,7 @@ void FFTProcessor::processFrame(bool bypassed)
         fft.performRealOnlyForwardTransform(fftPtrA, true);
 
         // Do stuff with the FFT data.
-        processSpectrum(fftPtr, fftPtrA, numBins);
+        processSpectrum(fftPtr, fftPtrA, numBins, settings);
 
         // Perform the inverse FFT.
         fft.performRealOnlyInverseTransform(fftPtr);
@@ -107,12 +108,14 @@ void FFTProcessor::processFrame(bool bypassed)
     }
 }
 
-void FFTProcessor::processSpectrum(float* data, float* dataA, int numBins)
+void FFTProcessor::processSpectrum(float* data, float* dataA, int numBins, ChainSettings settings)
 {
     // The spectrum data is floats organized as [re, im, re, im, ...]
     // but it's easier to deal with this as std::complex values.
     auto* cdata = reinterpret_cast<std::complex<float>*>(data);
     auto* cdataA = reinterpret_cast<std::complex<float>*>(dataA);
+
+    float morphFactor = settings.morphFactor;
 
     for (int i = 0; i < numBins; ++i) {
         // Usually we want to work with the magnitude and phase rather
@@ -122,8 +125,9 @@ void FFTProcessor::processSpectrum(float* data, float* dataA, int numBins)
         float magnitudeA = std::abs(cdataA[i]);
         float phaseA = std::arg(cdataA[i]);
 
-        float newMag = (magnitude + magnitudeA) / 2;
-        float newPhase = (phase + phaseA) / 2;
+
+        float morphedMag = (magnitude * (1.0f - morphFactor)) + (magnitudeA * morphFactor);
+        float morphedPhase = (phase * (1.0f - morphFactor)) + (phaseA * morphFactor);
 
 
 
@@ -134,6 +138,6 @@ void FFTProcessor::processSpectrum(float* data, float* dataA, int numBins)
         //phase *= float(i);
 
         // Convert magnitude and phase back into a complex number.
-        cdata[i] = std::polar(newMag, newPhase);
+        cdata[i] = std::polar(morphedMag, morphedPhase);
     }
 }

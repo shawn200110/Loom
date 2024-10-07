@@ -7,6 +7,10 @@
 
   Each channel should have its own FFTProcessor.
  */
+struct ChainSettings {
+    float morphFactor{ 0.5 };
+};
+
 class FFTProcessor
 {
 public:
@@ -15,12 +19,13 @@ public:
     int getLatencyInSamples() const { return fftSize; }
 
     void reset();
-    float processSample(float sample, float sampleA, bool bypassed);
-    void processBlock(float* data, float* dataA, int numSamples, bool bypassed);
+    float processSample(float sample, float sampleA, ChainSettings settings);
+    void processBlock(float* data, float* dataA, int numSamples, ChainSettings settings);
 
 private:
-    void processFrame(bool bypassed);
-    void processSpectrum(float* data, float* dataA, int numBins);
+
+    void processFrame(ChainSettings settings);
+    void processSpectrum(float* data, float* dataA, int numBins, ChainSettings settings);
 
     // The FFT has 2^order points and fftSize/2 + 1 bins.
     static constexpr int fftOrder = 10;
@@ -47,6 +52,8 @@ private:
 
     // The FFT working space. Contains interleaved complex numbers.
     std::array<float, fftSize * 2> fftData, fftDataA;
+
+
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(FFTProcessor)
 };
