@@ -217,7 +217,10 @@ LoomAudioProcessor::createParameterLayout()
 {
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
 
+    layout.add(std::make_unique<juce::AudioParameterFloat>("bypassed", "Bypass", juce::NormalisableRange <float>(0.f, 1.f, 1.f, 1.f), 0.f));
     layout.add(std::make_unique<juce::AudioParameterFloat>("morphFactor", "Morph Factor", juce::NormalisableRange <float>(0.f,1.f,0.02f, 1.f), 0.5f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("formantShiftFactor", "Formant", juce::NormalisableRange <float>(-1.f, 1.f, 0.05f, 1.f), 0.f));
+    
 
     return layout;
 }
@@ -276,7 +279,10 @@ ChainSettings getChainSettings(juce::AudioProcessorValueTreeState& apvts)
 {
     ChainSettings settings;
 
+    settings.bypassed = apvts.getRawParameterValue("bypassed")->load(); // Non-normalized parameters
     settings.morphFactor = apvts.getRawParameterValue("morphFactor")->load(); // Non-normalized parameters
+    settings.formantShiftFactor = apvts.getRawParameterValue("formantShiftFactor")->load(); // Non-normalized parameters
+    
 
     return settings;
 }

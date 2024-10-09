@@ -65,7 +65,8 @@ void FFTProcessor::processFrame(ChainSettings settings)
     const float* inputPtrA = inputFifoA.data();
     float* fftPtr = fftData.data();
     float* fftPtrA = fftDataA.data();
-    bool bypassed = 0;
+
+    bool bypassed = settings.bypassed;
 
     // Copy the input FIFO into the FFT working space in two parts.
     std::memcpy(fftPtr, inputPtr + pos, (fftSize - pos) * sizeof(float));
@@ -116,6 +117,7 @@ void FFTProcessor::processSpectrum(float* data, float* dataA, int numBins, Chain
     auto* cdataA = reinterpret_cast<std::complex<float>*>(dataA);
 
     float morphFactor = settings.morphFactor;
+    float formantShiftFactor = settings.formantShiftFactor;
 
     for (int i = 0; i < numBins; ++i) {
         // Usually we want to work with the magnitude and phase rather
@@ -126,8 +128,17 @@ void FFTProcessor::processSpectrum(float* data, float* dataA, int numBins, Chain
         float phaseA = std::arg(cdataA[i]);
 
 
-        float morphedMag = (magnitude * (1.0f - morphFactor)) + (magnitudeA * morphFactor);
-        float morphedPhase = (phase * (1.0f - morphFactor)) + (phaseA * morphFactor);
+        //float morphedMag = (magnitude * (1.0f - morphFactor)) + (magnitudeA * morphFactor);
+        float morphedMag = (magnitude * morphFactor) + (magnitudeA * (1.0f - morphFactor));
+
+  
+
+        //float morphedPhase = (phase * (1.0f - morphFactor)) + (phaseA * morphFactor);
+        //float morphedPhase = (phase + phaseA) / 2;
+        /*float deltaPhase = phase - phaseA;
+        float morphedPhase = phase + morphFactor * deltaPhase;*/
+        float blendCurve = 3 * morphFactor * morphFactor - 2 * morphFactor * morphFactor * morphFactor;  // Smoothstep function
+        float morphedPhase = blendCurve * phase + (1 - blendCurve) * phaseA;
 
 
 
@@ -141,3 +152,5 @@ void FFTProcessor::processSpectrum(float* data, float* dataA, int numBins, Chain
         cdata[i] = std::polar(morphedMag, morphedPhase);
     }
 }
+
+

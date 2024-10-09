@@ -8,7 +8,9 @@
   Each channel should have its own FFTProcessor.
  */
 struct ChainSettings {
+    float bypassed{ 0 };
     float morphFactor{ 0.5 };
+    float formantShiftFactor{ 0 };
 };
 
 class FFTProcessor
