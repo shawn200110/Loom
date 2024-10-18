@@ -219,7 +219,7 @@ LoomAudioProcessor::createParameterLayout()
 
     layout.add(std::make_unique<juce::AudioParameterFloat>("bypassed", "Bypass", juce::NormalisableRange <float>(0.f, 1.f, 1.f, 1.f), 0.f));
     layout.add(std::make_unique<juce::AudioParameterFloat>("morphFactor", "Morph Factor", juce::NormalisableRange <float>(0.f,1.f,0.02f, 1.f), 0.5f));
-    layout.add(std::make_unique<juce::AudioParameterFloat>("formantShiftFactor", "Formant", juce::NormalisableRange <float>(-1.f, 1.f, 0.05f, 1.f), 0.f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("formantShiftFactor", "Formant", juce::NormalisableRange <float>(0.f, 2.f, 0.05f, 1.f), 1.f));
     
 
     return layout;

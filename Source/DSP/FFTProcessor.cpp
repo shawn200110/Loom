@@ -127,29 +127,26 @@ void FFTProcessor::processSpectrum(float* data, float* dataA, int numBins, Chain
         float magnitudeA = std::abs(cdataA[i]);
         float phaseA = std::arg(cdataA[i]);
 
-
-        //float morphedMag = (magnitude * (1.0f - morphFactor)) + (magnitudeA * morphFactor);
-        float morphedMag = (magnitude * morphFactor) + (magnitudeA * (1.0f - morphFactor));
-
-  
-
-        //float morphedPhase = (phase * (1.0f - morphFactor)) + (phaseA * morphFactor);
-        //float morphedPhase = (phase + phaseA) / 2;
-        /*float deltaPhase = phase - phaseA;
-        float morphedPhase = phase + morphFactor * deltaPhase;*/
-        float blendCurve = 3 * morphFactor * morphFactor - 2 * morphFactor * morphFactor * morphFactor;  // Smoothstep function
-        float morphedPhase = blendCurve * phase + (1 - blendCurve) * phaseA;
+        // Apply the formant shift by moving frequency bins
+        int shiftedBin = static_cast<int>(i * formantShiftFactor);
+        if (shiftedBin < numBins)
+        {
+            //float morphedMag = (magnitude * (1.0f - morphFactor)) + (magnitudeA * morphFactor);
+            float morphedMag = (magnitude * morphFactor) + (magnitudeA * (1.0f - morphFactor));
 
 
 
-        // This is where you'd do your spectral processing...
-
-        // Silly example where we change the phase of each frequency bin
-        // somewhat randomly. Uncomment the following line to enable.
-        //phase *= float(i);
+            //float morphedPhase = (phase * (1.0f - morphFactor)) + (phaseA * morphFactor);
+            //float morphedPhase = (phase + phaseA) / 2;
+            /*float deltaPhase = phase - phaseA;
+            float morphedPhase = phase + morphFactor * deltaPhase;*/
+            float blendCurve = 3 * morphFactor * morphFactor - 2 * morphFactor * morphFactor * morphFactor;  // Smoothstep function
+            float morphedPhase = blendCurve * phase + (1 - blendCurve) * phaseA;
+            cdata[shiftedBin] = std::polar(morphedMag, morphedPhase);
+        }
 
         // Convert magnitude and phase back into a complex number.
-        cdata[i] = std::polar(morphedMag, morphedPhase);
+        
     }
 }
 
