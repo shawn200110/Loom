@@ -18,7 +18,7 @@ LoomAudioProcessor::LoomAudioProcessor()
 #if ! JucePlugin_IsSynth
         .withInput("Input", juce::AudioChannelSet::stereo(), true)
 #endif
-        .withInput("Aux Input", juce::AudioChannelSet::stereo(), true)
+        .withInput("AuxInput", juce::AudioChannelSet::stereo(), true)
         .withOutput("Output", juce::AudioChannelSet::stereo(), true)
 #endif
     )
@@ -106,6 +106,10 @@ void LoomAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     spec.numChannels = 1;
     spec.sampleRate = sampleRate;
 
+    //auto layout = getBusesLayout();
+    //layout.getChannelSet(true, 1) = juce::AudioChannelSet::stereo();  // Set Aux Input Bus
+    //setBusesLayout(layout);  // Apply the layout
+
     setLatencySamples(fft[0].getLatencyInSamples());
 
     fft[0].reset();
@@ -122,26 +126,33 @@ void LoomAudioProcessor::releaseResources()
 #ifndef JucePlugin_PreferredChannelConfigurations
 bool LoomAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
-  #if JucePlugin_IsMidiEffect
-    juce::ignoreUnused (layouts);
-    return true;
-  #else
-    // This is the place where you check if the layout is supported.
-    // In this template code we only support mono or stereo.
-    // Some plugin hosts, such as certain GarageBand versions, will only
-    // load plugins that support stereo bus layouts.
-    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
-     && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
-        return false;
+    // Check if the number of input and output buses match the expected count
+    if (layouts.inputBuses.size() != 2 || layouts.outputBuses.size() != 1)
+        return false; // Expect 2 input buses and 1 output bus
 
-    // This checks if the input layout matches the output layout
-   #if ! JucePlugin_IsSynth
-    if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
-        return false;
-   #endif
+    DBG("Input Buses Count: " << layouts.inputBuses.size());
+    DBG("Output Buses Count: " << layouts.outputBuses.size());
 
-    return true;
-  #endif
+
+    // Check that each input bus is stereo
+    auto mainInput = layouts.getChannelSet(true, 0);
+    auto auxInput = layouts.getChannelSet(true, 1);
+    auto output = layouts.getChannelSet(false, 0);
+
+    DBG("Main Input Channels: " << mainInput.size());
+    DBG("Aux Input Channels: " << auxInput.size());
+    DBG("Output Channels: " << output.size());
+
+    // Ensure all buses are stereo
+    if (mainInput == juce::AudioChannelSet::stereo() &&
+        auxInput == juce::AudioChannelSet::stereo() &&
+        output == juce::AudioChannelSet::stereo())
+    {
+        return true;
+    }
+
+    return false;
+
 }
 #endif
 
@@ -156,6 +167,9 @@ void LoomAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
         buffer.clear(i, 0, numSamples);
     }
 
+    DBG("Number of input buses: " << getBusCount(true));
+    DBG("Main Input channels: " << getChannelCountOfBus(true, 0));
+    DBG("Aux Input channels: " << getChannelCountOfBus(true, 1));
 
     float* channelL = buffer.getWritePointer(0);
     float* channelR = buffer.getWritePointer(1);
