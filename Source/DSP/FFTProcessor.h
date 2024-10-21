@@ -28,6 +28,14 @@ private:
 
     void processFrame(ChainSettings settings);
     void processSpectrum(float* data, float* dataA, int numBins, ChainSettings settings);
+    void linearPhase(float* data, int numBins);
+    void linearNaturalPhase(float* data, int numBins);
+    void randomWeightPhase(float* data, int numBins);
+    void invertPhase(float* data, int numBins);
+    void averageMagnitude(float* data, float* dataA, int numBins);
+    void averagePhase(float* data, float* dataA, int numBins);
+    void freqDepCrossFadeMagnitude(float* data, float* dataA, int numBins);
+
 
     // The FFT has 2^order points and fftSize/2 + 1 bins.
     static constexpr int fftOrder = 10;
