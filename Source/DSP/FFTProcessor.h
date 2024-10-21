@@ -11,6 +11,29 @@ struct ChainSettings {
     float bypassed{ 0 };
     float morphFactor{ 0.5 };
     float formantShiftFactor{ 0 };
+    float magProcessing{ 0 };
+    float phaseProcessing{ 0 };
+    float invertPhase{ 0 };
+};
+
+enum magProcessing
+{
+    addM,                // 0
+    subtract,           // 1
+    multiply,           // 2
+    divide,             // 3
+    linearBlend,        // 4
+    allPass             // 5
+};
+
+enum phaseProcessing
+{
+    addP,                // 0
+    linear,              // 1
+    linearNatural,       // 2
+    smoothStep,          // 3
+    preserveMainIn,      // 4
+    preserveAuxIn,       // 5
 };
 
 class FFTProcessor
@@ -28,13 +51,23 @@ private:
 
     void processFrame(ChainSettings settings);
     void processSpectrum(float* data, float* dataA, int numBins, ChainSettings settings);
-    void linearPhase(float* data, int numBins);
-    void linearNaturalPhase(float* data, int numBins);
-    void randomWeightPhase(float* data, int numBins);
-    void invertPhase(float* data, int numBins);
-    void averageMagnitude(float* data, float* dataA, int numBins);
-    void averagePhase(float* data, float* dataA, int numBins);
-    void freqDepCrossFadeMagnitude(float* data, float* dataA, int numBins);
+
+    // Phase Processing Functions
+    void averagePhase(std::complex<float>* cdata, std::complex<float>* cdataA, int numBins, ChainSettings settings);
+    void linearPhase(std::complex<float>* cdata, int numBins, ChainSettings settings);
+    void linearNaturalPhase(std::complex<float>* cdata, std::complex<float>* cdataA, int numBins, ChainSettings settings);
+    void smoothStepPhase(std::complex<float>* cdata, std::complex<float>* cdataA, int numBins, ChainSettings settings);
+    void preserveAuxInPhase(std::complex<float>* cdata, std::complex<float>* cdataA, int numBins, ChainSettings settings);
+    void invertPhase(std::complex<float>* cdata, int numBins, ChainSettings settings);
+
+    std::vector<float> linspace(float start, float end, int numPoints); // helper
+
+    // Magnitude Processing Functions
+    void addAverageMagnitude(std::complex<float>* cdata, std::complex<float>* cdataA, int numBins, ChainSettings settings);
+    void subtractAverageMagnitude(std::complex<float>* cdata, std::complex<float>* cdataA, int numBins, ChainSettings settings);
+    void multiplyAverageMagnitude(std::complex<float>* cdata, std::complex<float>* cdataA, int numBins, ChainSettings settings);
+    void divideAverageMagnitude(std::complex<float>* cdata, std::complex<float>* cdataA, int numBins, ChainSettings settings);
+    void linearBlendMagnitude(std::complex<float>* cdata, std::complex<float>* cdataA, int numBins, ChainSettings settings);
 
 
     // The FFT has 2^order points and fftSize/2 + 1 bins.

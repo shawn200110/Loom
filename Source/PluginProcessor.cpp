@@ -130,18 +130,10 @@ bool LoomAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) con
     if (layouts.inputBuses.size() != 2 || layouts.outputBuses.size() != 1)
         return false; // Expect 2 input buses and 1 output bus
 
-    DBG("Input Buses Count: " << layouts.inputBuses.size());
-    DBG("Output Buses Count: " << layouts.outputBuses.size());
-
-
     // Check that each input bus is stereo
     auto mainInput = layouts.getChannelSet(true, 0);
     auto auxInput = layouts.getChannelSet(true, 1);
     auto output = layouts.getChannelSet(false, 0);
-
-    DBG("Main Input Channels: " << mainInput.size());
-    DBG("Aux Input Channels: " << auxInput.size());
-    DBG("Output Channels: " << output.size());
 
     // Ensure all buses are stereo
     if (mainInput == juce::AudioChannelSet::stereo() &&
@@ -166,10 +158,6 @@ void LoomAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
     for (auto i = numInputChannels; i < numOutputChannels; ++i) {
         buffer.clear(i, 0, numSamples);
     }
-
-    DBG("Number of input buses: " << getBusCount(true));
-    DBG("Main Input channels: " << getChannelCountOfBus(true, 0));
-    DBG("Aux Input channels: " << getChannelCountOfBus(true, 1));
 
     float* channelL = buffer.getWritePointer(0);
     float* channelR = buffer.getWritePointer(1);
@@ -234,6 +222,9 @@ LoomAudioProcessor::createParameterLayout()
     layout.add(std::make_unique<juce::AudioParameterFloat>("bypassed", "Bypass", juce::NormalisableRange <float>(0.f, 1.f, 1.f, 1.f), 0.f));
     layout.add(std::make_unique<juce::AudioParameterFloat>("morphFactor", "Morph Factor", juce::NormalisableRange <float>(0.f,1.f,0.02f, 1.f), 0.5f));
     layout.add(std::make_unique<juce::AudioParameterFloat>("formantShiftFactor", "Formant", juce::NormalisableRange <float>(0.f, 2.f, 0.05f, 1.f), 1.f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("magProcessing", "Magnitude Processing", juce::NormalisableRange <float>(0.f, 5.f, 1.f, 1.f), 0.f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("phaseProcessing", "Phase Processing", juce::NormalisableRange <float>(0.f, 5.f, 1.f, 1.f), 0.f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("invertPhase", "Invert Phase", juce::NormalisableRange <float>(0.f, 1.f, 1.f, 1.f), 0.f));
     
 
     return layout;
@@ -296,6 +287,9 @@ ChainSettings getChainSettings(juce::AudioProcessorValueTreeState& apvts)
     settings.bypassed = apvts.getRawParameterValue("bypassed")->load(); // Non-normalized parameters
     settings.morphFactor = apvts.getRawParameterValue("morphFactor")->load(); // Non-normalized parameters
     settings.formantShiftFactor = apvts.getRawParameterValue("formantShiftFactor")->load(); // Non-normalized parameters
+    settings.magProcessing = apvts.getRawParameterValue("magProcessing")->load(); // Non-normalized parameters
+    settings.phaseProcessing = apvts.getRawParameterValue("phaseProcessing")->load(); // Non-normalized parameters
+    settings.invertPhase = apvts.getRawParameterValue("invertPhase")->load(); // Non-normalized parameters
     
 
     return settings;
